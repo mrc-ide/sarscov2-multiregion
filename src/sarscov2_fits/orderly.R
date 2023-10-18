@@ -53,9 +53,8 @@ if (deterministic) {
   n_sample <- 1000
   chains <- 4
   kernel_scaling <- 0.1
-  # adaptive_proposal <- mcstate::adaptive_proposal_control(initial_weight = 100,
-  #                                                         diminishing_adaptation = TRUE)
-  adaptive_proposal <- FALSE
+  adaptive_proposal <- mcstate::adaptive_proposal_control(initial_weight = 100,
+                                                          diminishing_adaptation = TRUE)
 } else {
   burnin <- 500
   n_mcmc <- 1500
