@@ -442,21 +442,21 @@ if (rt_severity) {
     dat$parameters$base[[1]]$epoch_dates)[dat$parameters$base[[1]]$strain_epochs[-1L]]
   
   # Paper plots
-  png("paper_plots/paper_figure_1.png", units = "in", width = 16.5, height = 10, res = 300)
-  paper_plot_1(dat, "england", vam_data)
-  dev.off()
+  write_png("paper_plots/paper_figure_1.png", units = "in", width = 16.5,
+            height = 10, res = 300,
+            paper_plot_1(dat, "england", vam_data))
   
-  png("paper_plots/paper_figure_2.png", units = "in", width = 16.5, height = 10, res = 300)
-  paper_plot_2(dat, "england", strain_epochs, vam_data, age_bands_select = TRUE)
-  dev.off()
+  write_png("paper_plots/paper_figure_2.png", units = "in", width = 16.5, 
+            height = 10, res = 300,
+            paper_plot_2(dat, "england", strain_epochs, vam_data, age_bands_select = TRUE))
   
   
   ## Supplement plots
-  png("paper_plots/suppl_age_heatmaps.png", units = "in", width = 18, height = 15, res = 300)
-  suppl_age_heatmaps(dat, "england", vam_data)
-  dev.off()
+  write_png("paper_plots/suppl_age_heatmaps.png", units = "in", width = 18,
+            height = 15, res = 300,
+            suppl_age_heatmaps(dat, "england", vam_data))
   
-  png("paper_plots/suppl_regional_intrinsic.png", units = "in", width = 11, height = 11, res = 300)
-  suppl_regional_intrinsic(dat, "england", "Emergence3", strain_epochs, vam_data)
-  dev.off()
+  write_png("paper_plots/suppl_regional_intrinsic.png", units = "in", width = 11,
+            height = 11, res = 300,
+            suppl_regional_intrinsic(dat, "england", "Emergence3", strain_epochs, vam_data))
 }
