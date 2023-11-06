@@ -25,7 +25,8 @@ run_fit <- function(data, model, region, short_run) {
   
   parallel <- control_parallel(n_chains, multiregion)
   
-  adaptive_proposal <- mcstate::adaptive_proposal_control(initial_weight = 100)
+  adaptive_proposal <- mcstate::adaptive_proposal_control(initial_vcv_weight = 100,
+                                                          min_scaling = 1)
   control <- 
     mcstate::pmcmc_control(n_steps = n_steps, n_burnin = burnin,
                            n_threads_total = parallel$n_threads_total,
@@ -33,14 +34,6 @@ run_fit <- function(data, model, region, short_run) {
                            n_steps_retain = n_steps_retain, save_state = TRUE,
                            adaptive_proposal = adaptive_proposal,
                            save_trajectories = TRUE, progress = TRUE)
-  
-  transform <- function (p) {
-    list(alpha = p[["alpha"]],
-         beta = p[["beta"]],
-         gamma = p[["gamma"]],
-         rho = p[["rho"]],
-         N = 10000)
-  }
   
   if (multiregion) {
     pf_data <- 
@@ -58,13 +51,14 @@ run_fit <- function(data, model, region, short_run) {
     alpha <- mcstate::pmcmc_parameter("alpha", 0.5, min = 0, max = 1)
     rho <- mcstate::pmcmc_parameter("rho", 0.05, min = 0, max = 1)
     
-    proposal_fixed <- diag(c(0.01, 0.01, 0.0001))
+    proposal_fixed <- diag(c(0.001, 0.001, 0.00001))
     row.names(proposal_fixed) <- colnames(proposal_fixed) <-
       c("gamma", "alpha", "rho")
-    proposal_varied <- array(rep(0.01, n_regions), c(1, 1, n_regions),
-                             dimnames = list("beta", "beta", regions))
+    proposal_varied <- array(rep(0.001, n_regions), c(1, 1, n_regions),
+                             dimnames = list("beta", "beta",
+                                             regions))
     
-    transform <- lapply(regions, function(r) transform)
+    transform <- lapply(regions, function(r) transform_pars)
     names(transform) <- regions
     
     pars <- mcstate::pmcmc_parameters_nested$new(
@@ -74,6 +68,9 @@ run_fit <- function(data, model, region, short_run) {
       proposal_fixed = proposal_fixed,
       populations = regions,
       transform = transform)
+    
+    initial <- replicate(control$n_chains,
+                         pars$propose(pars$initial(), "both", scale = 10))
     
     message("Running multiregion fit")
   } else {
@@ -86,17 +83,20 @@ run_fit <- function(data, model, region, short_run) {
            mcstate::pmcmc_parameter("gamma", 0.5, min = 0, max = 1),
            mcstate::pmcmc_parameter("alpha", 0.5, min = 0, max = 1),
            mcstate::pmcmc_parameter("rho", 0.05, min = 0, max = 1)),
-      proposal = diag(c(0.01, 0.01, 0.01, 0.0001)),
-      transform = transform)
+      proposal = diag(c(0.001, 0.001, 0.001, 0.00001)),
+      transform = transform_pars)
     
-    message(sprintf("Running single region fit for %s", region))
+    initial <- replicate(control$n_chains,
+                         pars$propose(pars$initial(), scale = 10))
+    
+    message(sprintf("Running single region fit for region %s", region))
   }
   
   n_threads <- parallel$n_threads_total / parallel$n_workers
   p <- mcstate::particle_deterministic$new(pf_data, model, compare = NULL,
                                            index = index, n_threads = n_threads)
   
-  samples <-  mcstate::pmcmc(pars, p, control = control)
+  samples <-  mcstate::pmcmc(pars, p, initial = initial, control = control)
   
   
   if (multiregion) {

@@ -53,8 +53,13 @@ if (deterministic) {
   n_sample <- 1000
   chains <- 4
   kernel_scaling <- 0.1
-  adaptive_proposal <- mcstate::adaptive_proposal_control(initial_weight = 100,
-                                                          diminishing_adaptation = TRUE)
+  if (multiregion) {
+    initial_vcv_weight <- 100
+  } else {
+    initial_vcv_weight <- 100
+  }
+  adaptive_proposal <- mcstate::adaptive_proposal_control(initial_vcv_weight = initial_vcv_weight,
+                                                          min_scaling = 1)
 } else {
   burnin <- 500
   n_mcmc <- 1500
