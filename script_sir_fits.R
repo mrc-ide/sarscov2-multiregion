@@ -14,8 +14,8 @@ packages <- c("sircovid", "lubridate", "coda", "tidyr", "ggplot2",
               "stringr", "ggrepel", "naniar", "desplot", "rmarkdown",
               "jtools", "DescTools", "car", "odin.dust")
 src <- conan::conan_sources(NULL,
-                            repos = c("https://ncov-ic.github.io/drat",
-                                      "https://raphaels1.r-universe.dev"))
+                            repos = c("https://ncov-ic.r-universe.dev",
+                                      "https://mrc-ide.r-universe.dev"))
 ctx <- context::context_save("contexts",
                              packages = packages,
                              package_sources = src)

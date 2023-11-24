@@ -28,8 +28,8 @@ packages <- c("sircovid", "lubridate", "coda", "tidyr", "ggplot2",
               "stringr", "ggrepel", "naniar", "desplot", "rmarkdown",
               "jtools", "DescTools", "car")
 src <- conan::conan_sources(NULL,
-                            repos = c("https://ncov-ic.github.io/drat",
-                                      "https://raphaels1.r-universe.dev"))
+                            repos = c("https://ncov-ic.r-universe.dev",
+                                      "https://mrc-ide.r-universe.dev"))
 ctx <- context::context_save("contexts",
                              packages = packages,
                              package_sources = src)
@@ -92,7 +92,7 @@ combined_single_region <-
 
 comparison <-
   obj$enqueue(orderly2::orderly_run('sarscov2_fits_comparison',
-                                    parameters = list(short_run = FALSE,
+                                    parameters = list(short_run = TRUE,
                                                       deterministic = TRUE,
                                                       assumptions = "central")))
 
