@@ -246,3 +246,37 @@ plot_colours <- function() {
     cyan2 = "#405D61")
 }
 
+plot_adaptive_scaling <- function(fit) {
+  multiregion <- fit$samples[[1]]$nested
+  
+  regions <- names(fit$samples)
+  
+  if (multiregion) {
+    n_rows <- ceiling((length(fit$samples) + 1) / 2)
+  } else {
+    n_rows <- ceiling(length(fit$samples) / 2)
+  }
+  n_cols <- 2
+  
+  op <- par(no.readonly = TRUE)
+  on.exit(par(op))
+  
+  par(mfrow = c(n_rows, n_cols),
+      mar = c(3, 3, 2, 1),
+      mgp = c(2, 0.5, 0),
+      oma = c(1, 1, 1, 1))
+  
+  if (multiregion) {
+    for (r in regions) {
+      matplot(fit$samples[[1]]$adaptive$scaling$varied[[r]], 
+              type = "l", main = r, ylab = "scaling")
+    }
+    matplot(fit$samples[[1]]$adaptive$scaling$fixed, 
+            type = "l", main = "Fixed", ylab = "scaling")
+  } else {
+    for (r in regions) {
+      matplot(fit$samples[[r]]$adaptive$scaling, 
+              type = "l", main = r, ylab = "scaling")
+    }
+  }
+}

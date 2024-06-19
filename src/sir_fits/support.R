@@ -25,8 +25,9 @@ run_fit <- function(data, model, region, short_run) {
   
   parallel <- control_parallel(n_chains, multiregion)
   
-  adaptive_proposal <- mcstate::adaptive_proposal_control(initial_vcv_weight = 100,
-                                                          min_scaling = 1)
+  adaptive_proposal <- mcstate::adaptive_proposal_control(initial_vcv_weight = 10,
+                                                          pre_diminish = 5000,
+                                                          min_scaling = 0)
   control <- 
     mcstate::pmcmc_control(n_steps = n_steps, n_burnin = burnin,
                            n_threads_total = parallel$n_threads_total,

@@ -32,7 +32,9 @@ orderly2::orderly_artefact("Fit plots",
 
 orderly2::orderly_artefact("Convergence diagnostics",
                            c("outputs/diag_single.rds",
-                             "outputs/diag_multi.rds"))
+                             "outputs/diag_multi.rds",
+                             "figs/adaptive_scaling_single.png",
+                             "figs/adaptive_scaling_multi.png"))
 
 orderly2::orderly_resource("support.R")
 orderly2::orderly_resource("plot.R")
@@ -60,6 +62,12 @@ for (i in seq_along(regions)) {
   write_png(fig_name, width = 3000, height = 1800, res = 200,
             plot_traceplots(fit_multiregion, i))
 }
+
+write_png("figs/adaptive_scaling_single.png", width = 3000, height = 1800, res = 200,
+          plot_adaptive_scaling(fit_single_regions))
+write_png("figs/adaptive_scaling_multi.png", width = 3000, height = 1800, res = 200,
+          plot_adaptive_scaling(fit_multiregion))
+
 
 write_png("figs/trajectories_single.png", width = 2400, height = 1200,
           res = 200,
