@@ -1,4 +1,4 @@
-## run script: multiregion and region specific deperministic models.
+## run script: multiregion and region specific deterministic models.
 # If not already run you will need to run these
 
 orderly2::orderly_run("sarscov2_data")

@@ -165,13 +165,9 @@ date <- "2022-02-24"
 
 if (multiregion) {
   dat <- spim_combined_load_multiregion("regional_results", get_severity = rt_severity)
-  saveRDS(dat$samples[[1]]$adaptive, "adaptive.rds")
 } else {
   dat <- spimalot::spim_combined_load("regional_results", regions = "england",
                                       get_onward = FALSE, get_severity = rt_severity)
-  adaptive <- spimalot:::list_transpose(
-    lapply(dat$samples[sircovid::regions("england")], "[[", "adaptive"))
-  saveRDS(adaptive, "adaptive.rds")
 }
 
 
@@ -228,19 +224,29 @@ write_png("figs/forest_plot_betas.png", width = 2400, height = 1600, res = 200,
 if (multiregion) {
   write_png("traceplots/traceplot_fixed.png", width = 3000, height = 1800, res = 200,
             plot_traceplots(dat, "england", FALSE))
+  write_png("traceplots/log_likelihood_fixed.png", width = 3000, height = 1800, res = 200,
+            plot_log_likelihood(dat, "england", FALSE))
   for (r in sircovid::regions("england")) {
     fig_name <- paste0("traceplots/traceplot_varied_", r, ".png")
     write_png(fig_name, width = 3000, height = 1800, res = 200,
               plot_traceplots(dat, r, TRUE))
+    fig_name <- paste0("traceplots/log_likelihood_varied_", r, ".png")
+    write_png(fig_name, width = 3000, height = 1800, res = 200,
+              plot_log_likelihood(dat, r, TRUE))
   }  
 } else {
   for (r in sircovid::regions("england")) {
     fig_name <- paste0("traceplots/traceplot_", r, ".png")
     write_png(fig_name, width = 3000, height = 1800, res = 200,
               plot_traceplots(dat, r))
+    fig_name <- paste0("traceplots/log_likelihood_", r, ".png")
+    write_png(fig_name, width = 3000, height = 1800, res = 200,
+              plot_log_likelihood(dat, r))
   }
 }
 
+write_png("traceplots/adaptive_scaling.png", width = 3000, height = 1800, res = 200,
+          plot_adaptive_scaling(dat))
 
 write_png("figs/mu_D.png", width = 2400, height = 1200, res = 200,
           plot_mu_D(

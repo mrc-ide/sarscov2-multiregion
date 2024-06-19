@@ -602,3 +602,112 @@ plot_traceplots <- function(dat, region, varied = TRUE) {
   
 }
 
+plot_log_likelihood <- function(dat, region, varied = TRUE) {
+  
+  multiregion <- dat$samples[[1]]$info$multiregion
+  if (multiregion) {
+    if (varied) {
+      samples <- dat$samples[[region]]
+      nms_subset <- samples$info$pars$varied
+      samples$full_probabilities <- samples$probabilities_full
+    } else {
+      samples <- dat$samples[[1]]
+      nms_subset <- samples$info$pars$fixed
+      samples$full_probabilities <-
+        Reduce('+', lapply(sircovid::regions(region),
+                           function (x) dat$samples[[x]]$probabilities_full))
+    }
+    samples$full_pars <- samples$pars_full[, nms_subset]
+  } else {
+    samples <- dat$samples[[region]]
+  }
+  
+  n_full_pars <- nrow(samples$full_pars)
+  n_chains <- max(samples$chain)
+  cols <- rev(viridisLite::viridis(n_chains))
+  samples$chain_full <- rep(seq_len(n_chains), each = n_full_pars / n_chains)
+  
+  stopifnot(
+    identical(samples$chain_full,
+              rep(seq_len(n_chains),
+                  each = length(samples$chain_full) / n_chains)))
+  
+  i <- spimalot:::reorder_beta(colnames(samples$full_pars))
+  pars <- samples$full_pars[, i]
+  
+  nms <- colnames(pars)
+  probs <- samples$full_probabilities
+  
+  op <- par(no.readonly = TRUE)
+  on.exit(par(op))
+  
+  new_grid <- function(title) {
+    dim <- c(2, 1)
+    par(mfrow = dim,
+        mar = c(3, 3, 2, 1),
+        mgp = c(2, 0.5, 0),
+        oma = c(1, 1, 1 + as.integer(title), 1))
+  }
+  
+  plot_traces1 <- function(p, name) {
+    traces <- matrix(p, ncol = n_chains)
+    ess <- coda::effectiveSize(coda::as.mcmc(traces))
+    
+    matplot(traces, type = "l", lty = 1,
+            xlab = "Iteration", bty = "n",
+            ylab = name, col = cols,
+            main = "",
+            font.main = 1)
+  }
+  
+  new_grid(FALSE)
+  plot_traces1(probs[, "log_likelihood"], "log_likelihood")
+  plot_traces1(probs[, "log_posterior"], "log_posterior")
+  
+}
+
+plot_adaptive_scaling <- function(dat) {
+  if (is.null(dat$samples[[1]]$adaptive)) {
+    return()
+  }
+  
+  multiregion <- dat$samples[[1]]$nested
+  
+  
+  
+  
+  if (multiregion) {
+    scaling <- dat$samples[[1]]$adaptive$scaling
+    regions <- names(scaling$varied)
+    n_rows <- ceiling((length(regions) + 1) / 2)
+  } else {
+    scaling <- lapply(dat$samples[sircovid::regions("england")], 
+                      function (x) x$adaptive$scaling)
+    regions <- names(scaling)
+    n_rows <- ceiling(length(regions) / 2)
+  }
+  
+  n_cols <- 2
+  
+  op <- par(no.readonly = TRUE)
+  on.exit(par(op))
+  
+  par(mfrow = c(n_rows, n_cols),
+      mar = c(3, 3, 2, 1),
+      mgp = c(2, 0.5, 0),
+      oma = c(1, 1, 1, 1))
+  
+  if (multiregion) {
+    for (r in regions) {
+      matplot(scaling$varied[[r]], 
+              type = "l", main = r, ylab = "scaling")
+    }
+    matplot(scaling$fixed, 
+            type = "l", main = "Fixed", ylab = "scaling")
+  } else {
+    for (r in regions) {
+      matplot(scaling[[r]], 
+              type = "l", main = r, ylab = "scaling")
+    }
+  }
+}

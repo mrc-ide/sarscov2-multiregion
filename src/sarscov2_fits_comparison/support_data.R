@@ -565,6 +565,9 @@ forest_plot_labels <- function(dat) {
 get_convergence_diagnostic <- function(dat) {
   
   conv_dx <- function(sample) {
+    if (is.null(sample$full_pars)) {
+      sample$full_pars <- sample$pars_full
+    }
     n_full_pars <- nrow(sample$full_pars)
     n_chains <- max(sample$chain)
     
@@ -573,7 +576,8 @@ get_convergence_diagnostic <- function(dat) {
     chains <- lapply(unname(split(data.frame(sample$full_pars),
                                   sample$chain_full)), coda::as.mcmc)
     
-    rhat <- tryCatch(coda::gelman.diag(chains), error = function(e) NULL)
+    rhat <- tryCatch(coda::gelman.diag(chains, multivariate = FALSE),
+                     error = function(e) NULL)
     if (!is.null(rhat)) {
       rhat <- round(max(rhat$psrf[, "Point est."]), 2)
     } else {

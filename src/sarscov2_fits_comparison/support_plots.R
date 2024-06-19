@@ -5,23 +5,27 @@ plot_compare_intrinsic_severity <- function(dat_single, dat_multi, when) {
       filter(region %in% sircovid::regions("england")) %>%
       pivot_wider(names_from = name, values_from = value) %>%
       filter(period == when) %>%
+      mutate(source = paste0("Basic ", source)) %>%
       select(!period)
     
-    r0 <- dplyr::bind_rows(
-      lapply(sircovid::regions("england"), function (r) get_r0_region(dat, r))) %>%
-      mutate(source = "R0") %>%
-      rename(estimate = value)
+    # r0 <- dplyr::bind_rows(
+    #   lapply(sircovid::regions("england"), function (r) get_r0_region(dat, r))) %>%
+    #   mutate(source = "R0") %>%
+    #   rename(estimate = value)
+    # 
+    # dplyr::bind_rows(sev, r0) %>%
+    #   mutate(fit = fit_type)
     
-    dplyr::bind_rows(sev, r0) %>%
+    sev %>%
       mutate(fit = fit_type)
   }
   
   variant_names <- c("Wildtype", "Alpha", "Delta", "Omicron")
-  source_names <- c("IHR", "HFR", "IFR", "R0")
-  fit_names <- c("Single regions fit", "Multiregion fit")
+  source_names <- c("Basic IHR", "Basic HFR", "Basic IFR")#, "R0")
+  fit_names <- c("Single regions fit", "Multi-region fit")
   
   df <- dplyr::bind_rows(get_sev(dat_single, "Single regions fit"),
-                         get_sev(dat_multi, "Multiregion fit")) %>%
+                         get_sev(dat_multi, "Multi-region fit")) %>%
     mutate(region = case_when(
       region == "east_of_england" ~ "EE",
       region == "london" ~ "LON",
@@ -59,29 +63,14 @@ plot_compare_intrinsic_severity <- function(dat_single, dat_multi, when) {
     scale_color_manual(values = all_variant_colours) +
     scale_fill_manual(values = all_variant_colours) +
     scale_x_discrete(breaks = NULL) +
-    facet_grid(rows = vars(source), cols = vars(fit), scales = "free_y")
+    scale_y_continuous(labels = scales::percent) +
+    facet_grid(rows = vars(source), cols = vars(fit), scales = "free_y") +
+    theme(strip.text = element_text(size = 20),
+          legend.text = element_text(size = 20),
+          legend.title = element_text(size = 20),
+          legend.key.size = unit(1, 'cm'),
+          legend.position = "bottom",
+          axis.text.y = element_text(size = 13))
   
   out
-}
-
-plot_intrinsic_severity1 <- function(dat, what, when, ymax) {
-  if (what == "R0") {
-    sev <- dplyr::bind_rows(
-      lapply(sircovid::regions("england"), function (r) get_r0_region(dat, r))) %>%
-      select(!source) %>%
-      rename(estimate = value)
-  } else {
-    sev <- dat$intrinsic_severity %>%
-      filter(region %in% sircovid::regions("england")) %>%
-      pivot_wider(names_from = name, values_from = value) %>%
-      filter(source == what, period == when) %>%
-      select(!c(period, source))
-  }
-   
-  
-  
-  
-  
-  out
-  
 }
