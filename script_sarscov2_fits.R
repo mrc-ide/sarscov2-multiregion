@@ -21,132 +21,83 @@ orderly2::orderly_run(
                     assumptions = "central"))
 
 ### ---------------------------------------------------------------------------
-setwd(orderly::orderly_config()$root)
-packages <- c("sircovid", "lubridate", "coda", "tidyr", "ggplot2",
-              "viridisLite", "orderly2", 'vaultr', 'readxl', "ggtext",
-              'abind', 'here', "mcstate", "dust", "spimalot", "purrr",
-              "stringr", "ggrepel", "naniar", "desplot", "rmarkdown",
-              "jtools", "DescTools", "car")
-src <- conan::conan_sources(NULL,
-                            repos = c("https://ncov-ic.r-universe.dev",
-                                      "https://mrc-ide.r-universe.dev"))
-ctx <- context::context_save("contexts",
-                             packages = packages,
-                             package_sources = src)
-cfg <- didehpc::didehpc_config(cluster = "wpia-hn",
-                               template = 'AllNodes',
-                               cores = 32)
-obj <- didehpc::queue_didehpc(ctx, config = cfg)
+## Basic cluster setup
+hipercow::hipercow_init(driver = "windows")
+hipercow::hipercow_provision(method = "pkgdepends")
 
 regions <- sircovid::regions("england")
 
-t <- obj$enqueue(packageVersion("sircovid"))
-t$wait(timeout = 100)
-
+short_run <- TRUE
 
 ##--------------------
-## Short runs multiregion deterministic
+## multiregion deterministic
 ##--------------------
 
-multiregion_fits <- obj$enqueue(
+multiregion_fits <- hipercow::task_create_expr(
   orderly2::orderly_run('sarscov2_fits',
-                        parameters = list(short_run = TRUE,
+                        parameters = list(region = "england",
                                           multiregion = TRUE,
-                                          region = "england",
+                                          short_run = short_run,
                                           deterministic = TRUE,
-                                          assumptions = "central"))
+                                          assumptions = "central")),
+  resources = hipercow::hipercow_resources(queue = 'AllNodes',
+                                           cores = 32)
 )
-multiregion_fits_result <- multiregion_fits$result()
+res <- hipercow::task_result(multiregion_fits)
 
-# combine draft runs
-combined_multiregion <-
-  obj$enqueue(orderly2::orderly_run('sarscov2_fits_combined',
-                       parameters = list(short_run = TRUE,
-                                         multiregion = TRUE,
-                                         deterministic = TRUE,
-                                         assumptions = "central")))
+# combine runs
+multiregion_combined <- hipercow::task_create_expr(
+  orderly2::orderly_run('sarscov2_fits_combined',
+                        parameters = list(short_run = short_run,
+                                          multiregion = TRUE,
+                                          deterministic = TRUE,
+                                          assumptions = "central")),
+  resources = hipercow::hipercow_resources(queue = 'AllNodes',
+                                           cores = 32)
+)
+res <- hipercow::task_result(multiregion_combined)
 
 
-## Short runs region specific deterministic
+##--------------------
+## single region deterministic
+##--------------------
+
 single_region_fits <- 
-  obj$lapply(X = regions,
-             FUN = function(x) {
-               orderly2::orderly_run('sarscov2_fits',
-                                    parameters = list(short_run = TRUE,
-                                                      multiregion = FALSE,
-                                                      region = x,
-                                                      deterministic = TRUE,
-                                                      assumptions = "central"))
-               })
+  hipercow::task_create_bulk_expr(
+    orderly2::orderly_run('sarscov2_fits',
+                          parameters = list(region = region,
+                                            multiregion = FALSE,
+                                            short_run = short_run,
+                                            deterministic = TRUE,
+                                            assumptions = "central")),
+    data.frame(region = regions),
+    resources = hipercow::hipercow_resources(queue = 'AllNodes',
+                                             cores = 4))
+res <- hipercow::hipercow_bundle_result(single_region_fits$name)
 
-## make note of your bundle names and what they refer to!
-batch_single_region_fits <- single_region_fits$name
-res_single_region_fits <- obj$task_bundle_get(batch_single_region_fits)$results()
-
-combined_single_region <-
-  obj$enqueue(orderly2::orderly_run('sarscov2_fits_combined',
-                                    parameters = list(short_run = TRUE,
-                                                      deterministic = TRUE,
-                                                      multiregion = FALSE,
-                                                      assumptions = "central")))
-
-comparison <-
-  obj$enqueue(orderly2::orderly_run('sarscov2_fits_comparison',
-                                    parameters = list(short_run = TRUE,
-                                                      deterministic = TRUE,
-                                                      assumptions = "central")))
-
-##----------------------------Long run------------------------------------------------
-##--------------------
-## Long runs multiregion
-##--------------------
-multiregion_fits <- obj$enqueue(orderly2::orderly_run('sarscov2_fits',
-                                                      parameters = list(short_run = FALSE,
-                                                                        multiregion = TRUE,
-                                                                        region = "england",
-                                                                        deterministic = TRUE,
-                                                                        assumptions = "central")))
-
-multiregion_fits_result <- multiregion_fits$result()
-
-# combine
-combined_multiregion <-
-  obj$enqueue(orderly2::orderly_run('sarscov2_fits_combined',
-                                    parameters = list(short_run = FALSE,
-                                                      multiregion = TRUE,
-                                                      deterministic = TRUE,
-                                                      assumptions = "central")))
+# combine runs
+single_region_combined <- hipercow::task_create_expr(
+  orderly2::orderly_run('sarscov2_fits_combined',
+                        parameters = list(short_run = short_run,
+                                          multiregion = FALSE,
+                                          deterministic = TRUE,
+                                          assumptions = "central")),
+  resources = hipercow::hipercow_resources(queue = 'AllNodes',
+                                           cores = 32)
+)
+res <- hipercow::task_result(multiregion_combined)
 
 
 ##--------------------
-## Long runs single region
+## comparison
 ##--------------------
-single_region_fits <- 
-  obj$lapply(X = regions,
-             FUN = function(x) {
-               orderly2::orderly_run('sarscov2_fits',
-                                     parameters = list(short_run = FALSE,
-                                                       multiregion = FALSE,
-                                                       region = x,
-                                                       deterministic = TRUE,
-                                                       assumptions = "central"))})
 
-## make note of your bundle names and what they refer to!
-batch_single_region_fits <- single_region_fits$name
-res_single_region_fits <- obj$task_bundle_get(batch_single_region_fits)$results()
-
-combined_single_region <-
-  obj$enqueue(orderly2::orderly_run('sarscov2_fits_combined',
-                                    parameters = list(short_run = FALSE,
-                                                      multiregion = FALSE,
-                                                      deterministic = TRUE,
-                                                      assumptions = "central")))
-
-combined_single_region_result <- combined_single_region$result()
-
-
-comparison <-
-  obj$enqueue(orderly2::orderly_run('sarscov2_fits_comparison',
-                                    parameters = list(short_run = FALSE,
-                                                      deterministic = TRUE,
-                                                      assumptions = "central")))
+comparison <- hipercow::task_create_expr(
+  orderly2::orderly_run('sarscov2_fits_comparison',
+                        parameters = list(short_run = short_run,
+                                          deterministic = TRUE,
+                                          assumptions = "central")),
+  resources = hipercow::hipercow_resources(queue = 'AllNodes',
+                                           cores = 32)
+)
+res <- hipercow::task_result(comparison)
