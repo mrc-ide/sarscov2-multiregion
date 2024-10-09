@@ -3,8 +3,8 @@ orderly2::orderly_parameters(short_run = FALSE, deterministic = FALSE, assumptio
 orderly2::orderly_shared_resource(global_util.R = "util_new.R")
 
 orderly2::orderly_artefact(
-  "Comparison plots",
-  c("figs/compare_intrinsic_severity.png")
+  description = "Comparison plots",
+  files = c("figs/compare_intrinsic_severity.png")
 )
 
 orderly2::orderly_dependency(

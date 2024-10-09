@@ -3,13 +3,14 @@ orderly2::orderly_parameters(region = "london",
                              deterministic = FALSE,
                              short_run = FALSE,
                              assumptions = "central",
-                             rt_severity = TRUE)
+                             rt_severity = TRUE,
+                             severity = TRUE)
 
 orderly2::orderly_shared_resource(global_util.R = "util_new.R")
 
 orderly2::orderly_artefact(
-  "Fitting outputs",
-  "outputs/fit.rds"
+  description = "Fitting outputs",
+  files = "outputs/fit.rds"
 )
 
 orderly2::orderly_dependency(
@@ -36,8 +37,8 @@ source("data.R")
 
 source("global_util.R")
 
-version_check("sircovid", "0.14.11")
-version_check("spimalot", "0.8.22")
+version_check("sircovid", "0.15.1")
+version_check("spimalot", "0.8.30")
 
 date <- "2022-02-24"
 
@@ -54,12 +55,10 @@ if (deterministic) {
   chains <- 4
   kernel_scaling <- 0.1
   if (multiregion) {
-    initial_vcv_weight <- 100
-  } else {
-    initial_vcv_weight <- 100
-  }
-  adaptive_proposal <- mcstate::adaptive_proposal_control(initial_vcv_weight = initial_vcv_weight,
-                                                          min_scaling = 1)
+    burnin <- 2 * burnin
+    n_mcmc <- 2 * n_mcmc
+  } 
+  adaptive_proposal <- mcstate::adaptive_proposal_control(initial_vcv_weight = 100)
 } else {
   burnin <- 500
   n_mcmc <- 1500
@@ -85,7 +84,7 @@ control <- spimalot::spim_control(
   n_mcmc = n_mcmc, burnin = burnin, n_sample = n_sample,
   adaptive_proposal = adaptive_proposal,
   compiled_compare = deterministic, rt = rt_severity,
-  severity = rt_severity)
+  severity = severity, intrinsic_severity = rt_severity)
 
 data_rtm <- read_csv("data/england_region_data.csv")
 data_serology <- read_csv("data/serology.csv")
