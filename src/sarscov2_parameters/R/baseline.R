@@ -334,7 +334,7 @@ create_baseline <- function(region, date, restart_date,
     vacc_doses_by_age_date_vaccine$Moderna), 1, sum, na.rm = TRUE)
   
   ## set %PF in CHW / CHR <-  80+
-  prop_pfizer <- c(prop_pfizer, rep(prop_pfizer[17], 2))
+  # prop_pfizer <- c(prop_pfizer, rep(prop_pfizer[17], 2))
   # 100% PF in 0-10
   prop_pfizer[sircovid:::sircovid_age_bins()$end < 10] <- 1
   
@@ -478,6 +478,8 @@ create_baseline <- function(region, date, restart_date,
                                     vaccine_days_to_effect, data_vaccination,
                                     n_doses, dose_start_dates,
                                     carehomes = FALSE)
+  vaccination$schedule$doses <- 
+    vaccination$schedule$doses[1:17, , , drop = FALSE]
   
   vaccine_schedule_real <- vaccination$schedule
   
@@ -498,23 +500,23 @@ create_baseline <- function(region, date, restart_date,
   ## (i.e. excluding immunity)
   intrinsic_severity_dates <- c(
     # Have a range for evaluating severity at Emergence
-    "Emergence1" = sircovid_date(as.Date("2020-03-16")),
-    "Emergence2" = sircovid_date(as.Date("2020-04-16")),
-    "Emergence3" = sircovid_date(as.Date("2020-05-16")),
-    "Emergence4" = sircovid_date(as.Date("2020-06-16")),
+    #"Emergence1" = sircovid_date(as.Date("2020-03-16")),
+    #"Emergence2" = sircovid_date(as.Date("2020-04-16")),
+    "Emergence3" = sircovid_date(as.Date("2020-05-16"))
+    #"Emergence4" = sircovid_date(as.Date("2020-06-16")),
     # Monthly intervals during the winter 2020/21 peak
-    "Sep 2020" = sircovid_date(as.Date("2020-09-01")),
-    "Oct 2020" = sircovid_date(as.Date("2020-10-01")),
-    "Nov 2020" = sircovid_date(as.Date("2020-11-01")),
-    "Dec 2020" = sircovid_date(as.Date("2020-12-01")),
-    "Jan 2021" = sircovid_date(as.Date("2021-01-01")),
-    "Feb 2021" = sircovid_date(as.Date("2021-02-01")),
-    "Mar 2021" = sircovid_date(as.Date("2021-03-01")),
+    #"Sep 2020" = sircovid_date(as.Date("2020-09-01")),
+    #"Oct 2020" = sircovid_date(as.Date("2020-10-01")),
+    #"Nov 2020" = sircovid_date(as.Date("2020-11-01")),
+    #"Dec 2020" = sircovid_date(as.Date("2020-12-01")),
+    #"Jan 2021" = sircovid_date(as.Date("2021-01-01")),
+    #"Feb 2021" = sircovid_date(as.Date("2021-02-01")),
+    #"Mar 2021" = sircovid_date(as.Date("2021-03-01")),
     # Omicron era
-    "Omicron1" = sircovid_date(as.Date("2021-11-01")),
-    "Omicron2" = sircovid_date(as.Date("2021-12-01")),
-    "Omicron3" = sircovid_date(as.Date("2022-01-01")),
-    "Omicron4" = sircovid_date(as.Date("2022-02-01"))
+    #"Omicron1" = sircovid_date(as.Date("2021-11-01")),
+    #"Omicron2" = sircovid_date(as.Date("2021-12-01")),
+    #"Omicron3" = sircovid_date(as.Date("2022-01-01")),
+    #"Omicron4" = sircovid_date(as.Date("2022-02-01"))
   )
   ## The epochs where each strain is introduced
   strain_epochs <- c(
