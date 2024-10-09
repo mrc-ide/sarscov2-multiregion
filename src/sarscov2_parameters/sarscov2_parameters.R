@@ -22,12 +22,12 @@ orderly2::orderly_dependency(
     weighted_prior_ranges.csv = "outputs/weighted_prior_ranges.csv"))
 
 orderly2::orderly_artefact(
-  "fitted hyperparameters for priors",
-  c("parameters_base.rds",
-    "parameters_info.csv",
-    "parameters_prior.csv",
-    "parameters_proposal.csv",
-    "parameters_transform.R"))
+  description = "fitted hyperparameters for priors",
+  files = c("parameters_base.rds",
+            "parameters_info.csv",
+            "parameters_prior.csv",
+            "parameters_proposal.csv",
+            "parameters_transform.R"))
 
 library(sircovid)
 library(spimalot)
@@ -50,8 +50,8 @@ source("R/multiregion.R")
 
 source("global_util.R")
 
-version_check("sircovid", "0.14.11")
-version_check("spimalot", "0.8.22")
+version_check("sircovid", "0.15.1")
+version_check("spimalot", "0.8.30")
 
 date <- "2022-02-24"
 
@@ -65,7 +65,7 @@ date <- "2022-02-24"
 epoch_dates <- c("2020-09-17", "2020-12-07", "2021-03-08", "2021-09-14",
                  "2021-11-01")
 
-## No restart dat
+## No restart date
 restart_date <- NULL
 
 ## Fixed parameter names for multiregion
