@@ -61,8 +61,8 @@ source("support_plots.R")
 
 source("global_util.R")
 
-version_check("sircovid", "0.14.11")
-version_check("spimalot", "0.8.22")
+version_check("sircovid", "0.15.1")
+version_check("spimalot", "0.8.31")
 
 date <- "2022-02-24"
 

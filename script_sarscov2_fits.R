@@ -85,7 +85,7 @@ single_region_combined <- hipercow::task_create_expr(
   resources = hipercow::hipercow_resources(queue = 'AllNodes',
                                            cores = 32)
 )
-res <- hipercow::task_result(multiregion_combined)
+res <- hipercow::task_result(single_region_combined)
 
 
 ##--------------------
