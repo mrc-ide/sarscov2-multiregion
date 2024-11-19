@@ -1,49 +1,48 @@
 
 orderly2::orderly_parameters(n_regions = 5)
 
-orderly2::orderly_artefact("Compiled SIR model and simulated data",
-                           c("outputs/data.rds",
-                             "outputs/true_pars.rds",
-                             "outputs/true_history.rds"))
+orderly2::orderly_artefact(description = "Simulated data and model code",
+                           files = c("outputs/data.rds",
+                                     "outputs/true_pars.rds",
+                                     "outputs/true_history.rds",
+                                     "sir.R"))
 
-orderly2::orderly_shared_resource(sir.R = "sir.R",
-                                  sir_support.R = "sir_support.R")
+orderly2::orderly_shared_resource(sir_support.R = "sir_support.R")
 
 orderly2::orderly_resource("support.R")
 orderly2::orderly_resource("sir.R")
 source("support.R")
 source("sir_support.R")
 
-library(odin.dust)
-library(dust)
+library(odin2)
+library(dust2)
 
-sir <- odin.dust::odin_dust("sir.R")
+sir <- odin2::odin("sir.R")
 
 regions <- LETTERS[seq_len(n_regions)]
 
 set.seed(1)
 
 pars_region_1 <- function() {
-  c(beta = rgamma(1, shape = 100, scale = 0.2 / 100),
-    gamma = 0.1,
-    alpha = 0.2,
-    rho = 0.01,
-    lambda = rpois(1, 10))
+  list(beta = rgamma(1, shape = 100, scale = 0.2 / 100),
+       gamma = 0.1,
+       alpha = 0.2,
+       rho = 0.01,
+       lambda = rpois(1, 10))
 }
 
 pars <- lapply(regions, function(x) pars_region_1())
-p <- lapply(pars, transform_pars)
 
-mod <- sir$new(p, 0, 1, seed = 1L, pars_multi = TRUE)
+sys <- dust2::dust_system_create(sir, pars, n_groups = n_regions, dt = 0.25)
+dust2::dust_system_set_state_initial(sys)
+time <- 0:100
+y <- dust2::dust_system_simulate(sys, time)
 
-n_days <- 100
-
-y <- mod$simulate(seq(0, 4 * n_days, by = 4))
-rownames(y) <- names(mod$info()[[1]]$index)
-dimnames(y)[[3]] <- regions
+rownames(y) <- unlist(names(dust2::dust_unpack_index(sys)))
+colnames(y) <- regions
 
 
-data <- simulate_data(y, p)
+data <- simulate_data(y, pars)
 
 dir.create("outputs", FALSE, TRUE)
 
