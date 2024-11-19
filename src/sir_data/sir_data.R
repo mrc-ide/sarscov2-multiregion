@@ -10,6 +10,7 @@ orderly2::orderly_shared_resource(sir.R = "sir.R",
                                   sir_support.R = "sir_support.R")
 
 orderly2::orderly_resource("support.R")
+orderly2::orderly_resource("sir.R")
 source("support.R")
 source("sir_support.R")
 
