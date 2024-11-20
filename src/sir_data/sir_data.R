@@ -27,8 +27,8 @@ pars_region_1 <- function() {
   list(beta = rgamma(1, shape = 100, scale = 0.2 / 100),
        gamma = 0.1,
        alpha = 0.2,
-       rho = 0.01,
-       lambda = rpois(1, 10))
+       lambda = rpois(1, 10),
+       N0 = 1000)
 }
 
 pars <- lapply(regions, function(x) pars_region_1())

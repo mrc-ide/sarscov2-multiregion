@@ -1,126 +1,158 @@
-index <- function(info) {
-  list(run = unlist(info$index["cases_inc"]), state = unlist(info$index))
+
+get_data <- function(data, region) {
+  if (region == "all") {
+    dust2::dust_filter_data(data, time = "day", group = "region")
+  } else {
+    data <- data[data$region == region, ]
+    data$region <- NULL
+    dust2::dust_filter_data(data, time = "day")
+  }
 }
 
-run_fit <- function(data, model, region, short_run) {
+fit_control <- function(region, deterministic, n_steps, n_burnin,
+                        n_sample, n_chains, n_particles) {
   
   multiregion <- region == "all"
-  if (short_run) {
-    burnin <- 50
-    n_steps <- 150
-    n_sample <- 100
-    n_chains <- 4
-  } else {
-    burnin <- 5000
-    n_steps <- 15000
-    n_sample <- 1000
-  }
-  if (multiregion) {
-    burnin <- 2 * burnin
-    n_steps <- 2 * n_steps
-  }
-  n_chains <- 4
   
-  n_steps_retain <- ceiling(n_sample / n_chains)
+  adaptive_proposal <- deterministic
+  
+  thinning_factor <- floor((n_steps - n_burnin) / (n_sample / n_chains))
   
   parallel <- control_parallel(n_chains, multiregion)
   
-  adaptive_proposal <- mcstate::adaptive_proposal_control(initial_vcv_weight = 100,
-                                                          min_scaling = 1)
-  control <- 
-    mcstate::pmcmc_control(n_steps = n_steps, n_burnin = burnin,
-                           n_threads_total = parallel$n_threads_total,
-                           n_workers = parallel$n_workers, n_chains = n_chains,
-                           n_steps_retain = n_steps_retain, save_state = TRUE,
-                           adaptive_proposal = adaptive_proposal,
-                           save_trajectories = TRUE, progress = TRUE)
+  rerun_every <- if (deterministic) Inf else 100
   
-  if (multiregion) {
-    pf_data <- 
-      mcstate::particle_filter_data(data, time = "day", rate = 4,
-                                    initial_time = 0, population = "population")
-    regions <- levels(pf_data$population)
-    n_regions <- length(regions)
-    
-    beta <- mcstate::pmcmc_varied_parameter(
-      name = "beta",
-      populations = regions,
-      initial = rep(0.5, n_regions),
-      min = 0, max = 1)
-    gamma <- mcstate::pmcmc_parameter("gamma", 0.5, min = 0, max = 1)
-    alpha <- mcstate::pmcmc_parameter("alpha", 0.5, min = 0, max = 1)
-    rho <- mcstate::pmcmc_parameter("rho", 0.05, min = 0, max = 1)
-    
-    proposal_fixed <- diag(c(0.001, 0.001, 0.00001))
-    row.names(proposal_fixed) <- colnames(proposal_fixed) <-
-      c("gamma", "alpha", "rho")
-    proposal_varied <- array(rep(0.001, n_regions), c(1, 1, n_regions),
-                             dimnames = list("beta", "beta",
-                                             regions))
-    
-    transform <- lapply(regions, function(r) transform_pars)
-    names(transform) <- regions
-    
-    pars <- mcstate::pmcmc_parameters_nested$new(
-      parameters = list(beta = beta, gamma = gamma, alpha = alpha,
-                        rho = rho),
-      proposal_varied = proposal_varied,
-      proposal_fixed = proposal_fixed,
-      populations = regions,
-      transform = transform)
-    
-    initial <- replicate(control$n_chains,
-                         pars$propose(pars$initial(), "both", scale = 10))
-    
-    message("Running multiregion fit")
-  } else {
-    pf_data <- 
-      mcstate::particle_filter_data(data[data$population == region, ],
-                                    time = "day", rate = 4, initial_time = 0)
-    
-    pars <- mcstate::pmcmc_parameters$new(
-      list(mcstate::pmcmc_parameter("beta", 0.5, min = 0, max = 1),
-           mcstate::pmcmc_parameter("gamma", 0.5, min = 0, max = 1),
-           mcstate::pmcmc_parameter("alpha", 0.5, min = 0, max = 1),
-           mcstate::pmcmc_parameter("rho", 0.05, min = 0, max = 1)),
-      proposal = diag(c(0.001, 0.001, 0.001, 0.00001)),
-      transform = transform_pars)
-    
-    initial <- replicate(control$n_chains,
-                         pars$propose(pars$initial(), scale = 10))
-    
-    message(sprintf("Running single region fit for region %s", region))
-  }
+  n_particles <- if (deterministic) 1 else n_particles
   
-  n_threads <- parallel$n_threads_total / parallel$n_workers
-  p <- mcstate::particle_deterministic$new(pf_data, model, compare = NULL,
-                                           index = index, n_threads = n_threads)
+  filter <- list(n_particles = n_particles,
+                 n_threads = parallel$n_threads)
   
-  samples <-  mcstate::pmcmc(pars, p, initial = initial, control = control)
+  pmcmc <- list(n_steps = n_steps,
+                n_chains = n_chains,
+                n_burnin = n_burnin,
+                thinning_factor = thinning_factor,
+                n_threads_total = parallel$n_threads_total,
+                n_workers = parallel$n_workers,
+                rerun_every = rerun_every,
+                rerun_random = TRUE, 
+                adaptive_proposal = adaptive_proposal,
+                progress = TRUE)
   
-  
-  if (multiregion) {
-    info <- list(region = levels(data$population),
-                 pars = list(fixed = pars$names("fixed"),
-                             varied = pars$names("varied")),
-                 n_burnin = burnin,
-                 n_steps = n_steps,
-                 n_chains = n_chains,
-                 n_sample = n_sample)
-  } else {
-    info <- list(region = region,
-                 pars = pars$names(),
-                 n_burnin = burnin,
-                 n_steps = n_steps,
-                 n_chains = n_chains,
-                 n_sample = n_sample)
-  }
-  
-  list(samples = samples,
-       data = pf_data,
-       info = info)
-  
+  list(
+    filter = filter,
+    pmcmc = pmcmc
+  )
 }
+
+create_filter <- function(sys, data, deterministic, control) {
+  
+  if (deterministic) {
+    dust2::dust_unfilter_create(sys, 0, data, dt = 0.25)
+    
+  } else {
+    dust2::dust_filter_create(sys, 0, data, dt = 0.25,
+                              n_particles = control$filter$n_particles,
+                              n_threads = control$filter$n_threads)
+  }
+}
+
+create_packer <- function(groups = NULL) {
+  
+  fitted_pars <- c("alpha",
+                   "beta",
+                   "gamma",
+                   "lambda")
+  
+  if (is.null(groups)) {
+    
+    fixed <- list(N0 = 1000)
+    packer <- monty::monty_packer(scalar = fitted_pars, fixed = fixed)
+  
+  } else {
+    
+    fixed <- list(N0 = 1000)
+    shared <- c("alpha", "gamma")
+    packer <- monty::monty_packer_grouped(
+      groups, scalar = fitted_pars, fixed = fixed, shared = shared)
+    
+  }
+  
+  packer
+}
+
+create_prior <- function(region, names){
+  ## We will use the monty DSL for priors, but it is not currently setup
+  ## for nested models so we will have to write that version manually
+  if (region == "all") {
+    domain <- array(0, c(length(names), 2))
+    rownames(domain) <- names
+    domain[, 2] <- ifelse(grepl("^alpha", names), 1, 1000)
+    monty_model(
+      list(
+        parameters = names,
+        density = function(x) {
+          names(x) <- names
+          sum(dbeta(x[grepl("^alpha", names(x))], 1, 1, log = TRUE)) +
+            sum(dunif(x[!grepl("^alpha", names(x))], 0, 1000, log = TRUE))},
+        domain = domain
+      ))
+  } else {
+    monty::monty_dsl({
+      alpha ~ Beta(1, 1)
+      beta ~ Uniform(0, 1000)
+      gamma ~ Uniform(0, 1000)
+      lambda ~ Uniform(0, 1000)
+    })
+  }
+}
+
+run_fit <- function(filter, packer, prior, control, deterministic, region) {
+  
+  likelihood <- dust2::dust_likelihood_monty(filter, packer,
+                                             save_trajectories = TRUE)
+  
+  density <- likelihood + prior 
+  
+  names <- packer$names()
+  initial <- rep(0, length(names))
+  initial[grepl("^alpha|^beta|^gamma", names)] <- 0.5
+  initial[grepl("^lambda", names)] <- 5
+  
+  vcv <- array(0, c(length(names), length(names)))
+  diag(vcv[grepl("^alpha|^beta|^gamma", names),
+           grepl("^alpha|^beta|^gamma", names)]) <- 0.001
+  if (sum(grepl("^lambda", names)) == 1) {
+    vcv[grepl("^lambda", names), grepl("^lambda", names)] <- 1
+  } else {
+    diag(vcv[grepl("^lambda", names), grepl("^lambda", names)]) <- 1
+  }
+  
+  
+  
+  n_steps <- control$pmcmc$n_steps
+  n_chains <- control$pmcmc$n_chains
+  
+  if (deterministic) {
+    sampler <- monty::monty_sampler_adaptive(vcv)
+  } else {
+    sampler <- monty::monty_sampler_random_walk(vcv)
+  }
+  
+  runner <- monty::monty_runner_serial()
+  samples <- monty::monty_sample(density, sampler, n_steps,
+                                 initial = initial, n_chains = n_chains,
+                                 runner = runner)
+  
+  rownames(samples$observations$trajectories) <- filter$packer_state$names()
+  if (region == "all") {
+    colnames(samples$observations$trajectories) <- filter$groups
+  }
+  ## save the packer and data for downstream use
+  samples$packer <- packer
+  samples$data <- data
+  samples
+}
+
 
 control_parallel <- function(n_chains, multiregion, verbose = TRUE) {
   n_threads <- control_cores()
