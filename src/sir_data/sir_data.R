@@ -7,12 +7,9 @@ orderly2::orderly_artefact(description = "Simulated data and model code",
                                      "outputs/true_history.rds",
                                      "sir.R"))
 
-orderly2::orderly_shared_resource(sir_support.R = "sir_support.R")
-
 orderly2::orderly_resource("support.R")
 orderly2::orderly_resource("sir.R")
 source("support.R")
-source("sir_support.R")
 
 library(odin2)
 library(dust2)

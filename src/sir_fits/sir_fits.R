@@ -15,11 +15,15 @@ orderly2::orderly_artefact(description = "Fit object",
                                      "outputs/true_history.rds"))
 
 orderly2::orderly_resource("support.R")
+orderly2::orderly_resource("plot.R")
 source("support.R")
+source("plot.R")
 
 library(monty)
 library(dust2)
 library(odin2)
+library(ggplot2)
+library(bayesplot)
 
 deterministic <- TRUE
 
@@ -43,6 +47,8 @@ data <- get_data(data, region)
 control <- fit_control(region, deterministic, n_steps, n_burnin, n_sample,
                        n_chains, n_particles)
 
+sir <- odin2::odin("sir.R")
+
 filter <- create_filter(sir, data, deterministic, control)
 
 groups <- if (region == "all") unique(data$region) else NULL
@@ -54,4 +60,11 @@ prior <- create_prior(region, packer$names())
 fit <- run_fit(filter, packer, prior, control, deterministic, region)
 
 dir.create("outputs", FALSE, TRUE)
+ggsave(traceplots(fit, control), 
+       filename = "outputs/traceplots.png",
+       width = 15, height = 9, bg = "white")
+
+
+fit <- thin_samples(fit, control)
+
 saveRDS(fit, "outputs/fit.rds")

@@ -184,3 +184,56 @@ control_cores <- function() {
                                    getOption("mc.cores", 1))))
 }
 
+
+thin_samples <- function(samples, control) {
+  browser()
+  burnin <- control$pmcmc$n_burnin
+  thinning_factor <- control$pmcmc$thinning_factor
+  
+  traj_names <- dimnames(samples$observations$trajectories)
+  
+  samples <- monty::monty_samples_thin(samples, thinning_factor, burnin)
+  dimnames(samples$observations$trajectories) <- traj_names
+  
+  
+  samples$pars <- array_flatten(samples$pars, c(2, 3))
+  
+  samples$density <- c(samples$density)
+  
+  if (region == "all") {
+    samples$observations$trajectories <- 
+      array_flatten(samples$observations$trajectories, c(4, 5))
+  } else {
+    samples$observations$trajectories <- 
+      array_flatten(samples$observations$trajectories, c(3, 4))
+  }
+  
+  samples
+}
+
+
+array_flatten <- function(x, i) {
+  dx <- dim(x)
+  if (any(i < 1 | i > length(dx))) {
+    stop(sprintf("Values of 'i' must be in [1, %d]", length(dx)))
+  }
+  if (length(i) < 2) {
+    stop("i must be vector of at least length 2")
+  }
+  if (any(diff(i) != 1)) {
+    stop("All values of 'i' must be consecutive integers")
+  }
+  dx[[i[[1L]]]] <- prod(dx[i])
+  dx_new <- dx[seq_along(dx)[-i[-1]]]
+  if (length(dx_new) == 1L) {
+    dx_new <- NULL
+  }
+  nms_x <- dimnames(x)
+  if (!is.null(nms_x)) {
+    nms_x[i[1]] <- list(NULL)
+    nms_x[i[-1]] <- NULL
+  }
+  dim(x) <- dx_new
+  dimnames(x) <- nms_x
+  x
+}
