@@ -18,7 +18,6 @@ hipercow::hipercow_provision()
 multiregion_fits <- hipercow::task_create_expr(
   orderly2::orderly_run('sir_fits',
                         parameters = list(short_run = FALSE,
-                                          multiregion = TRUE,
                                           region = "all")),
   resources = hipercow::hipercow_resources(queue = 'AllNodes',
                                            cores = 20)
@@ -31,7 +30,6 @@ multiregion_fits_result <- hipercow::hipercow_result(multiregion_fits)
 single_region_fits <- hipercow::task_create_bulk_expr(
   orderly2::orderly_run('sir_fits',
                         parameters = list(short_run = FALSE,
-                                          multiregion = FALSE,
                                           region = region)),
   data.frame(region = regions),
   resources = hipercow::hipercow_resources(queue = 'AllNodes',
