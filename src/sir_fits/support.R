@@ -186,7 +186,6 @@ control_cores <- function() {
 
 
 thin_samples <- function(samples, control) {
-  browser()
   burnin <- control$pmcmc$n_burnin
   thinning_factor <- control$pmcmc$thinning_factor
   

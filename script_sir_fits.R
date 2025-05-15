@@ -7,7 +7,8 @@ orderly2::orderly_run("sir_data",
 
 
 ### ---------------------------------------------------------------------------
-hipercow::hipercow_init(driver = "windows")
+hipercow::hipercow_init()
+hipercow::hipercow_configure(driver = "dide-windows")
 hipercow::hipercow_provision()
 
 
@@ -22,7 +23,7 @@ multiregion_fits <- hipercow::task_create_expr(
   resources = hipercow::hipercow_resources(queue = 'AllNodes',
                                            cores = 20)
 )
-multiregion_fits_result <- hipercow::hipercow_result(multiregion_fits)
+multiregion_fits_result <- hipercow::task_result(multiregion_fits)
 
 ##--------------------
 ## Long runs single region

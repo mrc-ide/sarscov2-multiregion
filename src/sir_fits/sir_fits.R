@@ -12,7 +12,8 @@ orderly2::orderly_parameters(short_run = FALSE,
 orderly2::orderly_artefact(description = "Fit object",
                            files = c("outputs/fit.rds",
                                      "outputs/true_pars.rds",
-                                     "outputs/true_history.rds"))
+                                     "outputs/true_history.rds",
+                                     "outputs/traceplots.png"))
 
 orderly2::orderly_resource("support.R")
 orderly2::orderly_resource("plot.R")
