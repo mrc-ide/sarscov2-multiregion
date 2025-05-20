@@ -6,8 +6,8 @@ orderly2::orderly_dependency(
     "outputs/true_history.rds" = "outputs/true_history.rds",
     "outputs/true_pars.rds" = "outputs/true_pars.rds"))
 
-orderly2::orderly_parameters(short_run = FALSE,
-                             region = "all")
+orderly_pars <- orderly2::orderly_parameters(short_run = FALSE,
+                                             region = "all")
 
 orderly2::orderly_artefact(description = "Fit object",
                            files = c("outputs/fit.rds",
@@ -28,7 +28,7 @@ library(bayesplot)
 
 deterministic <- TRUE
 
-if (short_run) {
+if (orderly_pars$short_run) {
   n_burnin <- 50
   n_steps <- 150
   n_sample <- 100
@@ -43,22 +43,23 @@ if (short_run) {
 }
 
 data <- readRDS("inputs/data.rds")
-data <- get_data(data, region)
+data <- get_data(data, orderly_pars$region)
 
-control <- fit_control(region, deterministic, n_steps, n_burnin, n_sample,
-                       n_chains, n_particles)
+control <- fit_control(orderly_pars$region, deterministic, n_steps, n_burnin,
+                       n_sample, n_chains, n_particles)
 
 sir <- odin2::odin("sir.R")
 
 filter <- create_filter(sir, data, deterministic, control)
 
-groups <- if (region == "all") unique(data$region) else NULL
+groups <- if (orderly_pars$region == "all") unique(data$region) else NULL
 
 packer <- create_packer(groups)
 
-prior <- create_prior(region, packer$names())
+prior <- create_prior(orderly_pars$region, packer$names())
 
-fit <- run_fit(filter, packer, prior, control, deterministic, region)
+fit <- run_fit(filter, packer, prior, control, deterministic,
+               orderly_pars$region)
 
 dir.create("outputs", FALSE, TRUE)
 ggsave(traceplots(fit, control), 

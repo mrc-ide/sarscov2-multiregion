@@ -19,8 +19,8 @@ initial(cases_inc, zero_every = 1) <- 0
 beta <- parameter()
 gamma <- parameter()
 alpha <- parameter()
-N <- parameter(1000)
-lambda <- parameter(10)
+N <- parameter()
+lambda <- parameter()
 
 exp_noise <- parameter(1e+06)
 cases <- data()
