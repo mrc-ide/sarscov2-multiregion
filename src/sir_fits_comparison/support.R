@@ -1,45 +1,9 @@
-load_single_region <- function(regions) {
+load_fits <- function(regions) {
   fit <- lapply(regions, function (r) 
-    readRDS(paste0("regional_results/single/", r, "/fit.rds")))
+    readRDS(paste0("inputs/fit_single_", r, ".rds")))
   names(fit) <- regions
   
-  convergence_diagnostics <- lapply(fit, get_convergence_diagnostic)
-  names(convergence_diagnostics) <- regions
-  
-  fit <- list_transpose(fit)
-  fit$convergence_diagnostics <- convergence_diagnostics
-  
-  fit
-}
-
-load_multiregion <- function(regions) {
-  fit <- readRDS("regional_results/multi/fit.rds")
-  
-  convergence_diagnostics <- get_convergence_diagnostic(fit)
-  
-  region_samples <- function(r) {
-    samples <- fit$samples
-    samples$pars <- samples$pars_full[, , r]
-    samples$probabilities <- samples$probabilities_full[, , r]
-    samples$state <- samples$state[, r, ]
-    samples$trajectories$state <- samples$trajectories$state[, r, , ]
-    samples$predict$transform <- samples$predict$transform[[r]]
-    samples
-  }
-  
-  fit$samples <- lapply(seq_along(regions), region_samples)
-  names(fit$samples) <- regions
-  
-  
-  region_data <- function(region) {
-    data <- fit$data
-    data[data$region == region, ]
-  }
-  
-  fit$data <- lapply(regions, region_data)
-  names(fit$data) <- regions
-  
-  fit$convergence_diagnostics <- convergence_diagnostics
+  fit$multi <- readRDS("inputs/fit_multi.rds")
   
   fit
 }

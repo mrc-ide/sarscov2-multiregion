@@ -1,59 +1,6 @@
-plot_traceplots <- function(fit, r) {
-  
-  samples <- fit$samples[[r]]
-  
-  n_pars_full <- nrow(samples$pars_full)
-  n_chains <- max(samples$chain)
-  cols <- rev(viridisLite::viridis(n_chains))
-  samples$chain_full <- rep(seq_len(n_chains), each = n_pars_full / n_chains)
-  
-  stopifnot(
-    identical(samples$chain_full,
-              rep(seq_len(n_chains),
-                  each = length(samples$chain_full) / n_chains)))
-  
-  pars <- samples$pars_full
-  probs <- samples$probabilities_full
-  
-  nms <- colnames(pars)
-  
-  op <- par(no.readonly = TRUE)
-  on.exit(par(op))
-  
-  new_grid <- function(n, title) {
-    n_rows <- ceiling(sqrt(n + 1))
-    if (n + 1 <= n_rows * (n_rows - 1)) {
-      n_cols <- n_rows - 1
-    } else {
-      n_cols <- n_rows
-    }
-    
-    par(mfrow = c(n_rows, n_cols),
-        mar = c(3, 3, 2, 1),
-        mgp = c(2, 0.5, 0),
-        oma = c(1, 1, 1 + as.integer(title), 1))
-  }
-  
-  plot_traces1 <- function(p, name) {
-    traces <- matrix(p, ncol = n_chains)
-    ess <- coda::effectiveSize(coda::as.mcmc(traces))
-    
-    matplot(traces, type = "l", lty = 1,
-            xlab = "Iteration", bty = "n",
-            ylab = name, col = cols,
-            main = "",
-            font.main = 1)
-  }
-  
-  new_grid(length(nms), FALSE)
-  for (nm in nms) {
-    plot_traces1(pars[, nm], nm)
-  }
-  plot_traces1(probs[, "log_likelihood"], "log_likelihood")
-  
-}
 
-plot_trajectories <- function(fit, true_history, regions, what) {
+plot_trajectories <- function(fit, true_history, regions, what,
+                              multiregion = FALSE) {
 
   n_regions <- length(regions)
   op <- par(mfcol = c(length(what), n_regions),
@@ -63,7 +10,7 @@ plot_trajectories <- function(fit, true_history, regions, what) {
   
   
   for (r in regions) {
-    plot_trajectories_region(r, fit, true_history, what)
+    plot_trajectories_region(r, fit, true_history, what, multiregion)
   }
   
   
@@ -72,24 +19,33 @@ plot_trajectories <- function(fit, true_history, regions, what) {
         at = seq(1 / n_regions / 2, by = 1 / n_regions, length.out = n_regions))
 }
 
-plot_trajectories_region <- function(region, fit, true_history, what) {
+plot_trajectories_region <- function(region, fit, true_history, what,
+                                     multiregion = FALSE) {
   for (w in what) {
-    plot_trajectories_region1(w, region, fit, true_history)
+    plot_trajectories_region1(w, region, fit, true_history, multiregion)
   }
 }
 
-plot_trajectories_region1 <- function(what, region, fit, true_history) {
+plot_trajectories_region1 <- function(what, region, fit, true_history,
+                                      multiregion = FALSE) {
   
-  trajectories <- fit$samples[[region]]$trajectories
-  date <- trajectories$time / trajectories$rate
+  if (multiregion) {
+    trajectories <- fit$multi$observations$trajectories
+    res_fit <- trajectories[what, region, , ]
+  } else {
+    trajectories <- fit[[region]]$observations$trajectories
+    res_fit <- trajectories[what, , ]
+  }
+  
+  res_true <- true_history[what, region, -1L]
+  date <- fit[[region]]$data$day
+  
   cols <- plot_colours()
   
-  res_fit <- trajectories$state[what, , ]
   
-  res_true <- true_history[what, , region, ]
   
   ps <- seq(0.025, 0.975, 0.005)
-  qs <- apply(res_fit, MARGIN = 2, FUN = quantile, ps, na.rm = TRUE)
+  qs <- apply(res_fit, MARGIN = 1, FUN = quantile, ps, na.rm = TRUE)
   
   oo <- par(mgp = c(1.7, 0.5, 0), bty = "n")
   on.exit(oo)
@@ -246,3 +202,78 @@ plot_colours <- function() {
     cyan2 = "#405D61")
 }
 
+
+forest_plot <- function(fits, true_pars) {
+  
+  plot1 <- function(par, shared = TRUE) {
+    
+    summarise <- function(region, multi_varied = FALSE) {
+      if (multi_varied) {
+        p <- fits$multi$pars[paste0(par, "<", region, ">"), ]
+      } else {
+        p <- fits[[region]]$pars[par, ]
+      }
+      data.frame(region = region,
+                 mean = mean(p),
+                 lb = quantile(p, 0.025, names = FALSE),
+                 ub = quantile(p, 0.975, names = FALSE))
+    }
+    
+    df <- lapply(regions, summarise) %>%
+      dplyr::bind_rows()
+    
+    if (shared) {
+      df <- rbind(df, summarise("multi"))
+      df$region <- factor(df$region, c("multi", rev(regions)))
+      
+      true_value <- true_pars[[1]][[par]]
+      
+      ggplot(df, aes(y = region, x = mean, xmin = lb, xmax = ub)) +
+        theme_classic() +
+        geom_point(color = 'black', shape = 18, size = 3) +
+        geom_linerange() +
+        geom_point(data = subset(df, region == 'multi'),
+                   color = 'red', shape = 18, size = 3) +
+        geom_linerange(data = subset(df, region == 'multi'), color = 'red') +
+        geom_vline(xintercept = true_value, color = "blue",
+                   linetype = "dashed") +
+        xlab(par)
+    } else {
+      df$fit <- "single"
+      df_multi <- lapply(regions, function(r) summarise(r, TRUE)) %>%
+        dplyr::bind_rows()
+      df_multi$fit <- "multi"
+      df <- rbind(df, df_multi)
+      df$region <- factor(df$region, rev(regions))
+      
+      true_value <- 
+        vapply(rev(regions), function(r) true_pars[[r]][[par]], numeric(1))
+      
+      g <- ggplot(df, aes(y = region, x = mean, xmin = lb, xmax = ub, col = fit,
+                     fill = fit)) +
+        theme_classic() +
+        geom_point(shape = 18, size = 3, 
+                   position = position_dodge(width = 0.5)) +
+        geom_linerange(position = position_dodge(width = 0.5)) +
+        scale_fill_manual(values = c("red", "black"), guide = "none") +
+        scale_color_manual(values = c("red", "black"), guide = "none") +
+        xlab(par)
+      
+      for (i in 1:length(true_value)) {
+        g <- g + geom_segment(y = i - 0.5, yend = i + 0.5, x = true_value[i],
+                              xend = true_value[i],
+                              linetype = "dashed", color = "blue")
+      }
+      g
+    }
+    
+    
+  }
+  
+  alpha <- plot1("alpha")
+  gamma <- plot1("gamma")
+  beta <- plot1("beta", shared = FALSE)
+  lambda <- plot1("lambda", shared = FALSE)
+  
+  (alpha | gamma) / (beta | lambda)
+}

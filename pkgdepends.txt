@@ -1,6 +1,11 @@
 repo::https://ncov-ic.r-universe.dev
 repo::https://mrc-ide.r-universe.dev
 
+monty
+dust2
+odin2
+bayesplot
+
 sircovid
 lubridate
 coda
@@ -8,7 +13,6 @@ tidyr
 ggplot2
 viridisLite
 orderly2
-vaultr
 readxl
 ggtext
 abind

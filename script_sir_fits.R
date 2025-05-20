@@ -7,49 +7,39 @@ orderly2::orderly_run("sir_data",
 
 
 ### ---------------------------------------------------------------------------
-setwd(orderly::orderly_config()$root)
-packages <- c("sircovid", "lubridate", "coda", "tidyr", "ggplot2",
-              "viridisLite", "orderly2", 'vaultr', 'readxl', "ggtext",
-              'abind', 'here', "mcstate", "dust", "spimalot", "purrr",
-              "stringr", "ggrepel", "naniar", "desplot", "rmarkdown",
-              "jtools", "DescTools", "car", "odin.dust")
-src <- conan::conan_sources(NULL,
-                            repos = c("https://ncov-ic.r-universe.dev",
-                                      "https://mrc-ide.r-universe.dev"))
-ctx <- context::context_save("contexts",
-                             packages = packages,
-                             package_sources = src)
-cfg <- didehpc::didehpc_config(cluster = "wpia-hn",
-                               template = 'AllNodes',
-                               cores = 32)
-obj <- didehpc::queue_didehpc(ctx, config = cfg)
+hipercow::hipercow_init()
+hipercow::hipercow_configure(driver = "dide-windows")
+hipercow::hipercow_provision()
 
 
 ##----------------------------Long run------------------------------------------------
 ##--------------------
 ## Long runs multiregion
 ##--------------------
-multiregion_fits <- obj$enqueue(orderly2::orderly_run('sir_fits',
-                                                      parameters = list(short_run = FALSE,
-                                                                        multiregion = TRUE,
-                                                                        region = "all")))
-
-multiregion_fits_result <- multiregion_fits$result()
+multiregion_fits <- hipercow::task_create_expr(
+  orderly2::orderly_run('sir_fits',
+                        parameters = list(short_run = FALSE,
+                                          region = "all")),
+  resources = hipercow::hipercow_resources(queue = 'AllNodes',
+                                           cores = 20)
+)
+multiregion_fits_result <- hipercow::task_result(multiregion_fits)
 
 ##--------------------
 ## Long runs single region
 ##--------------------
-single_region_fits <- 
-  obj$lapply(X = regions,
-             FUN = function(x) {
-               orderly2::orderly_run('sir_fits',
-                                     parameters = list(short_run = FALSE,
-                                                       multiregion = FALSE,
-                                                       region = x))})
+single_region_fits <- hipercow::task_create_bulk_expr(
+  orderly2::orderly_run('sir_fits',
+                        parameters = list(short_run = FALSE,
+                                          region = region)),
+  data.frame(region = regions),
+  resources = hipercow::hipercow_resources(queue = 'AllNodes',
+                                           cores = 4)
+)
+single_region_fits_result <- 
+  hipercow::hipercow_bundle_result(single_region_fits$name)
 
-## make note of your bundle names and what they refer to!
-batch_single_region_fits <- single_region_fits$name
-res_single_region_fits <- obj$task_bundle_get(batch_single_region_fits)$results()
+
 
 
 comparison <-
