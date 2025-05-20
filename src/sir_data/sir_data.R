@@ -1,5 +1,6 @@
 
-orderly_pars <- orderly2::orderly_parameters(n_regions = 5)
+orderly_pars <- orderly2::orderly_parameters(n_regions = 5,
+                                             deterministic_data = FALSE)
 
 
 orderly2::orderly_artefact(description = "Simulated data and model code",
@@ -31,8 +32,10 @@ pars_region_1 <- function() {
 
 pars <- lapply(regions, function(x) pars_region_1())
 
-sys <- dust2::dust_system_create(sir, pars, n_groups = orderly_pars$n_regions,
-                                 dt = 0.25)
+sys <- 
+  dust2::dust_system_create(sir, pars, dt = 0.25,
+                            n_groups = orderly_pars$n_regions,
+                            deterministic = orderly_pars$deterministic_data)
 dust2::dust_system_set_state_initial(sys)
 time <- 0:100
 y <- dust2::dust_system_simulate(sys, time)

@@ -1,13 +1,15 @@
+
+orderly_pars <- orderly2::orderly_parameters(short_run = FALSE,
+                                             region = "all",
+                                             deterministic_data = FALSE)
+
 orderly2::orderly_dependency(
   "sir_data",
-  'latest()',
+  quote(latest(parameter:deterministic_data == this:deterministic_data)),
   c("inputs/data.rds" = "outputs/data.rds",
     "sir.R" = "sir.R",
     "outputs/true_history.rds" = "outputs/true_history.rds",
     "outputs/true_pars.rds" = "outputs/true_pars.rds"))
-
-orderly_pars <- orderly2::orderly_parameters(short_run = FALSE,
-                                             region = "all")
 
 orderly2::orderly_artefact(description = "Fit object",
                            files = c("outputs/fit.rds",
