@@ -65,12 +65,12 @@ create_packer <- function(groups = NULL) {
   
   if (is.null(groups)) {
     
-    fixed <- list(N0 = 1000)
+    fixed <- list(N = 1000)
     packer <- monty::monty_packer(scalar = fitted_pars, fixed = fixed)
   
   } else {
     
-    fixed <- list(N0 = 1000)
+    fixed <- list(N = 1000)
     shared <- c("alpha", "gamma")
     packer <- monty::monty_packer_grouped(
       groups, scalar = fitted_pars, fixed = fixed, shared = shared)
