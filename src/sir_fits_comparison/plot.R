@@ -37,7 +37,11 @@ plot_trajectories_region1 <- function(what, region, fit, true_history,
     res_fit <- trajectories[what, , ]
   }
   
-  res_true <- true_history[what, region, -1L]
+  if (what == "cases_inc") {
+    res_true <- fits[[region]]$data$cases
+  } else {
+    res_true <- true_history[what, region, -1L]
+  }
   date <- fit[[region]]$data$day
   
   cols <- plot_colours()
@@ -64,7 +68,7 @@ plot_trajectories_region1 <- function(what, region, fit, true_history,
   
   ci_bands(qs[c("2.5%", "25.0%", "75.0%", "97.5%"), ], date,
            cols = fit_cols, horiz = FALSE, leg = FALSE)
-  lines(date, qs["50.0%", ], col = cols$now, lty = 1, lwd = 1.5,
+  lines(date, qs["50.0%", ], col = cols$blue, lty = 1, lwd = 1.5,
         lend = 1)
   points(date, res_true, pch = 23, bg = cols$orange, col = cols$brown, cex = 0.7,
          lwd = 0.6)

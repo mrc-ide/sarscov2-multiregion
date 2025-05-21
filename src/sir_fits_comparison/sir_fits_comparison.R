@@ -38,16 +38,16 @@ true_pars <- readRDS("inputs/true_pars.rds")
 dir.create("figs", FALSE, TRUE)
 dir.create("outputs", FALSE, TRUE)
 
-write_png("figs/trajectories_single.png", width = 2400, height = 1200,
+write_png("figs/trajectories_single.png", width = 2400, height = 1800,
           res = 200,
           plot_trajectories(
-            fits, true_history, regions, c("S", "I"), FALSE))
+            fits, true_history, regions, c("S", "I", "cases_inc"), FALSE))
 
 
-write_png("figs/trajectories_multi.png", width = 2400, height = 1200,
+write_png("figs/trajectories_multi.png", width = 2400, height = 1800,
           res = 200,
           plot_trajectories(
-            fits, true_history, regions, c("S", "I"), TRUE))
+            fits, true_history, regions, c("S", "I", "cases_inc"), TRUE))
 
 
 write_png("figs/forest_plot.png", width = 1200, height = 1200,
