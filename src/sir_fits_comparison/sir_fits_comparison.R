@@ -29,6 +29,8 @@ orderly2::orderly_resource("plot.R")
 source("plot.R")
 source("support.R")
 
+library(tidyverse)
+library(patchwork)
 
 fits <- load_fits(regions)
 
