@@ -4,6 +4,7 @@ load_fits <- function(regions) {
   names(fit) <- regions
   
   fit$multi <- readRDS("inputs/fit_multi.rds")
+  fit$multi_beta_hp <- readRDS("inputs/fit_multi_beta_hp.rds")
   
   fit
 }

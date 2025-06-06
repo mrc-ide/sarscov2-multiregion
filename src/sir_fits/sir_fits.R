@@ -7,7 +7,8 @@ orderly2::orderly_dependency(
     "outputs/true_pars.rds" = "outputs/true_pars.rds"))
 
 orderly_pars <- orderly2::orderly_parameters(short_run = FALSE,
-                                             region = "all")
+                                             region = "all",
+                                             beta_hyperprior = FALSE)
 
 orderly2::orderly_artefact(description = "Fit object",
                            files = c("outputs/fit.rds",
@@ -54,7 +55,7 @@ filter <- create_filter(sir, data, deterministic, control)
 
 groups <- if (orderly_pars$region == "all") unique(data$region) else NULL
 
-packer <- create_packer(groups)
+packer <- create_packer(groups, beta_hyperprior)
 
 prior <- create_prior(orderly_pars$region, packer$names())
 

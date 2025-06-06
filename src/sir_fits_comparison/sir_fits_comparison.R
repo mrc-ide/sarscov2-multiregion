@@ -10,11 +10,15 @@ for (r in regions) {
                                  "figs/traceplots_single_${r}.png" = "outputs/traceplots.png"))
 }
 orderly2::orderly_dependency("sir_fits",
-                             quote(latest(parameter:region == "all" && parameter:short_run == this:short_run)),
+                             quote(latest(parameter:region == "all" && parameter:short_run == this:short_run && parameter:beta_hyperprior == FALSE)),
                              c("inputs/fit_multi.rds" = "outputs/fit.rds",
                                "figs/traceplots_multi.png" = "outputs/traceplots.png",
                                "inputs/true_history.rds" = "outputs/true_history.rds",
                                "inputs/true_pars.rds" = "outputs/true_pars.rds"))
+orderly2::orderly_dependency("sir_fits",
+                             quote(latest(parameter:region == "all" && parameter:short_run == this:short_run && parameter:beta_hyperprior == TRUE)),
+                             c("inputs/fit_multi_beta_hp.rds" = "outputs/fit.rds",
+                               "figs/traceplots_multi_beta_hp.png" = "outputs/traceplots.png"))
 
 orderly2::orderly_artefact(description = "Fit plots",
                            files = c("figs/trajectories_single.png",
@@ -50,6 +54,11 @@ write_png("figs/trajectories_multi.png", width = 2400, height = 1800,
           res = 200,
           plot_trajectories(
             fits, true_history, regions, c("S", "I", "cases_inc"), TRUE))
+
+# write_png("figs/trajectories_multi.png", width = 2400, height = 1800,
+#           res = 200,
+#           plot_trajectories(
+#             fits, true_history, regions, c("S", "I", "cases_inc"), TRUE, TRUE))
 
 
 write_png("figs/forest_plot.png", width = 1200, height = 1200,

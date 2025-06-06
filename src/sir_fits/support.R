@@ -56,7 +56,7 @@ create_filter <- function(sys, data, deterministic, control) {
   }
 }
 
-create_packer <- function(groups = NULL) {
+create_packer <- function(groups = NULL, beta_hyperprior = FALSE) {
   
   fitted_pars <- c("alpha",
                    "beta",
@@ -70,8 +70,14 @@ create_packer <- function(groups = NULL) {
   
   } else {
     
-    fixed <- list(N = 1000)
     shared <- c("alpha", "gamma")
+    
+    if (beta_hyperprior) {
+      fitted_pars <- c(fitted_pars, c("beta_cv", "beta_mean"))
+      shared <- c(shared, c("beta_cv", "beta_mean"))
+    }
+    
+    fixed <- list(N = 1000)
     packer <- monty::monty_packer_grouped(
       groups, scalar = fitted_pars, fixed = fixed, shared = shared)
     
@@ -86,14 +92,28 @@ create_prior <- function(region, names){
   if (region == "all") {
     domain <- array(0, c(length(names), 2))
     rownames(domain) <- names
-    domain[, 2] <- ifelse(grepl("^alpha", names), 1, 1000)
+    domain[, 2] <- ifelse(grepl("^alpha|^beta_cv", names), 1, 1000)
     monty_model(
       list(
         parameters = names,
         density = function(x) {
           names(x) <- names
-          sum(dbeta(x[grepl("^alpha", names(x))], 1, 1, log = TRUE)) +
-            sum(dunif(x[!grepl("^alpha", names(x))], 0, 1000, log = TRUE))},
+          dens <- sum(dbeta(x[grepl("^alpha", names(x))], 1, 1, log = TRUE)) +
+            sum(dunif(x[grepl("^gamma", names(x))], 0, 1000, log = TRUE)) +
+            sum(dunif(x[grepl("^lambda", names(x))], 0, 1000, log = TRUE))
+          if (all(c("beta_mean", "beta_cv") %in% names(x))) {
+            beta_scale <- x["beta_mean"] * x["beta_cv"]^2
+            dens <- dens +
+              dunif(x["beta_mean"], 0, 1000, log = TRUE) +
+              dunif(x["beta_cv"], 0, 1, log = TRUE) +
+              sum(dgamma(x[grepl("^beta<", names(x))], 
+                         shape = 1 / x["beta_cv"]^2, 
+                         scale = beta_scale, log = TRUE))
+          } else {
+            dens <- dens + 
+              sum(dunif(x[grepl("^beta<", names(x))], 0, 1000, log = TRUE))
+          }
+        },
         domain = domain
       ))
   } else {
@@ -116,6 +136,7 @@ run_fit <- function(filter, packer, prior, control, deterministic, region) {
   names <- packer$names()
   initial <- rep(0, length(names))
   initial[grepl("^alpha|^beta|^gamma", names)] <- 0.5
+  initial[grepl("^beta_cv", names)] <- 0.2
   initial[grepl("^lambda", names)] <- 5
   
   vcv <- array(0, c(length(names), length(names)))
