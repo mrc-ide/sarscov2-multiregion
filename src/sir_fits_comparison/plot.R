@@ -1,16 +1,16 @@
 
 plot_trajectories <- function(fit, true_history, regions, what,
-                              multiregion = FALSE) {
-
+                              multiregion = FALSE, beta_hyperprior = FALSE) {
+  
   n_regions <- length(regions)
   op <- par(mfcol = c(length(what), n_regions),
             oma = c(1, 1, 4, 1),
             mar = c(3, 3, 0.5, 0.5))
+  
   on.exit(par(op))
-  
-  
   for (r in regions) {
-    plot_trajectories_region(r, fit, true_history, what, multiregion)
+    plot_trajectories_region(r, fit, true_history, what, multiregion,
+                             beta_hyperprior)
   }
   
   
@@ -20,17 +20,24 @@ plot_trajectories <- function(fit, true_history, regions, what,
 }
 
 plot_trajectories_region <- function(region, fit, true_history, what,
-                                     multiregion = FALSE) {
+                                     multiregion = FALSE,
+                                     beta_hyperprior = FALSE) {
   for (w in what) {
-    plot_trajectories_region1(w, region, fit, true_history, multiregion)
+    plot_trajectories_region1(w, region, fit, true_history, multiregion,
+                              beta_hyperprior)
   }
 }
 
 plot_trajectories_region1 <- function(what, region, fit, true_history,
-                                      multiregion = FALSE) {
+                                      multiregion = FALSE,
+                                      beta_hyperprior = FALSE) {
   
   if (multiregion) {
-    trajectories <- fit$multi$observations$trajectories
+    if (beta_hyperprior) {
+      trajectories <- fit$multi_beta_hp$observations$trajectories
+    } else {
+      trajectories <- fit$multi$observations$trajectories
+    }
     res_fit <- trajectories[what, region, , ]
   } else {
     trajectories <- fit[[region]]$observations$trajectories
@@ -38,7 +45,7 @@ plot_trajectories_region1 <- function(what, region, fit, true_history,
   }
   
   if (what == "cases_inc") {
-    res_true <- fits[[region]]$data$cases
+    res_true <- fit[[region]]$data$cases
   } else {
     res_true <- true_history[what, region, -1L]
   }

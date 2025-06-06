@@ -22,7 +22,8 @@ orderly2::orderly_dependency("sir_fits",
 
 orderly2::orderly_artefact(description = "Fit plots",
                            files = c("figs/trajectories_single.png",
-                                     "figs/trajectories_multi.png"))
+                                     "figs/trajectories_multi.png",
+                                     "figs/trajectories_multi_beta_hp.png"))
 
 # orderly2::orderly_artefact(description = "Convergence diagnostics",
 #                            files = c("outputs/diag_single.rds",
@@ -55,10 +56,10 @@ write_png("figs/trajectories_multi.png", width = 2400, height = 1800,
           plot_trajectories(
             fits, true_history, regions, c("S", "I", "cases_inc"), TRUE))
 
-# write_png("figs/trajectories_multi.png", width = 2400, height = 1800,
-#           res = 200,
-#           plot_trajectories(
-#             fits, true_history, regions, c("S", "I", "cases_inc"), TRUE, TRUE))
+write_png("figs/trajectories_multi_beta_hp.png", width = 2400, height = 1800,
+          res = 200,
+          plot_trajectories(
+            fits, true_history, regions, c("S", "I", "cases_inc"), TRUE, TRUE))
 
 
 write_png("figs/forest_plot.png", width = 1200, height = 1200,
