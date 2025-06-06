@@ -38,7 +38,7 @@ plot_trajectories_region1 <- function(what, region, fit, true_history,
   }
   
   if (what == "cases_inc") {
-    res_true <- fits[[region]]$data$cases
+    res_true <- fit[[region]]$data$cases
   } else {
     res_true <- true_history[what, region, -1L]
   }
