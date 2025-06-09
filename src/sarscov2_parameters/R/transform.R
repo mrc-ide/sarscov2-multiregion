@@ -1,8 +1,8 @@
 compute_severity <- function(pars, severity_data, assumptions) {
   dt <- 0.25 # TODO: tidy this up
-  expected <- c("mu_D", "mu_D_2", "mu_D_3", "mu_D_4", "mu_D_5",
+  expected <- c("mu_D", "mu_D_2", "mu_D_3", "mu_D_4",
                 "p_G_D",
-                "p_G_D_2", "p_H", "p_H_2", "p_H_D", "p_ICU", "p_ICU_2",
+                "p_G_D_2", "p_H", "p_H_D", "p_ICU", "p_ICU_2",
                 "p_ICU_D", "p_W_D")
   if (assumptions == "mu_d_summer") {
     expected <- c(expected, "mu_D_6")
@@ -16,9 +16,8 @@ compute_severity <- function(pars, severity_data, assumptions) {
                                         "2020-07-01", "2020-09-15",
                                         "2020-10-15", "2020-12-01",
                                         "2021-02-04",
-                                        "2021-04-01", "2021-11-04",
-                                        "2021-12-31"))
-  mu_D_vec <- c(1, mu_D, mu_D, mu_D_2, mu_D_2, mu_D_3, mu_D_4, mu_D_4, mu_D_5)
+                                        "2021-04-01"))
+  mu_D_vec <- c(1, mu_D, mu_D, mu_D_2, mu_D_2, mu_D_3, mu_D_4)
   
   if (assumptions == "mu_d_winter") {
     
@@ -58,8 +57,8 @@ compute_severity <- function(pars, severity_data, assumptions) {
   p_ICU_value <- c(p_ICU, p_ICU_2)
   
   # c. Probablity of hospitalisation
-  p_H_date <- sircovid::sircovid_date(c("2021-11-04", "2021-12-31"))
-  p_H_value <- c(p_H, p_H_2)
+  p_H_date <- NULL
+  p_H_value <- p_H
   
   # d. Probability of dying outside hospital
   p_G_D_date <- sircovid::sircovid_date(c("2020-05-01", "2020-07-01"))
@@ -93,7 +92,7 @@ compute_severity <- function(pars, severity_data, assumptions) {
 
 compute_progression <- function(pars, progression_data) {
   dt <- 0.25 # TODO: make this flexible
-  expected <- c("mu_gamma_H", "mu_gamma_H_2", "mu_gamma_H_3", "mu_gamma_H_4")
+  expected <- c("mu_gamma_H", "mu_gamma_H_2")
   stopifnot(all(expected %in% names(pars)))
   ## WARNING: this is a hack
   list2env(pars[expected], environment())
@@ -111,11 +110,8 @@ compute_progression <- function(pars, progression_data) {
   # Reduce length of stay; same dates apply
   mu_gamma_H_date <- sircovid::sircovid_date(c("2020-12-01",
                                                "2021-01-01",
-                                               "2021-03-01",
-                                               "2021-06-01",
-                                               "2021-09-01"))
-  mu_gamma_H_value <- c(1, 1 / mu_gamma_H, 1 / mu_gamma_H_2,
-                        1 / mu_gamma_H_3, 1 / mu_gamma_H_4)
+                                               "2021-03-01"))
+  mu_gamma_H_value <- c(1, 1 / mu_gamma_H, 1 / mu_gamma_H_2)
 
   gamma_E <- gammas$gamma_E
   gamma_ICU_pre <- gammas$gamma_ICU_pre
@@ -273,18 +269,14 @@ make_transform <- function(baseline) {
 
   expected <- c("start_date", baseline$beta_names,
                 ## severity
-                "mu_D", "mu_D_2", "mu_D_3", "mu_D_4", "mu_D_5",
-                "p_G_D", "p_G_D_2", "p_H", "p_H_2", "p_H_D", "p_ICU", "p_ICU_2",
+                "mu_D", "mu_D_2", "mu_D_3", "mu_D_4",
+                "p_G_D", "p_G_D_2", "p_H", "p_H_D", "p_ICU", "p_ICU_2",
                 "p_ICU_D", "p_W_D",
                 ## progression
-                "mu_gamma_H", "mu_gamma_H_2", "mu_gamma_H_3", "mu_gamma_H_4",
+                "mu_gamma_H", "mu_gamma_H_2",
                 # multistrain
                 "ta_alpha", "seed_date_alpha",
-                "ta_delta", "seed_date_delta",
-                "ta_omicron", "seed_date_omicron",
-                "rel_p_H_alpha", "rel_p_H_delta", "rel_p_H_omicron",
-                "rel_p_ICU_alpha", "rel_p_ICU_delta", "rel_p_ICU_omicron",
-                "rel_p_D_alpha", "rel_p_D_delta", "rel_p_D_omicron",
+                "rel_p_H_alpha", "rel_p_ICU_alpha", "rel_p_D_alpha",
                 ## observation
                 "alpha_D", "alpha_H", "alpha_admission", "alpha_death_hosp",
                 paste0("p_NC_", baseline$pillar2_age_bands),
@@ -510,25 +502,6 @@ make_transform <- function(baseline) {
       
     }
     
-    p1 <- stage_parameters("Wildtype", 0)
-    p2 <- stage_parameters("Wildtype_Alpha", 0)
-    p3 <- stage_parameters("Wildtype_Alpha", 2)
-    p4 <- stage_parameters("Alpha_Delta", 2)
-    p5 <- stage_parameters("Alpha_Delta", 3)
-    p6 <- stage_parameters("Delta_Omicron", 3)
-
-    epochs <- list(
-      mcstate::multistage_epoch(
-        epoch_dates[1], p2, sircovid::inflate_state_strains),
-      mcstate::multistage_epoch(
-        epoch_dates[2], p3, sircovid::inflate_state_vacc_classes),
-      mcstate::multistage_epoch(
-        epoch_dates[3], p4, sircovid::rotate_strains),
-      mcstate::multistage_epoch(
-        epoch_dates[4], p5, sircovid::inflate_state_vacc_classes),
-      mcstate::multistage_epoch(
-        epoch_dates[5], p6, sircovid::rotate_strains)
-      )
-    mcstate::multistage_parameters(p1, epochs = epochs)
+    stage_parameters("Wildtype_Alpha", 2)
   }
 }

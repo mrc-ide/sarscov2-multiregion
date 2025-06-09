@@ -14,8 +14,8 @@ create_priors <- function(pars_info) {
   # Named vector of prior ranges for hospitalisation parameters
   ps_to_lower <- data.frame(
     param = c("p_ICU", "p_H_D", "p_ICU_D",
-              "p_W_D", "p_G_D", "p_H", "p_H_2"),
-    to_lower = c(0.1, 0.1, 0.1, 0.1, 0.2, 0.2, 0.3)
+              "p_W_D", "p_G_D", "p_H"),
+    to_lower = c(0.1, 0.1, 0.1, 0.1, 0.2, 0.2)
   )
 
   regional_ps <- regional_ps %>%
@@ -92,13 +92,10 @@ create_priors <- function(pars_info) {
   ret <- priors_wide_to_long(hps)
   
   par <- c("rho_pillar2_tests", "alpha_H", "alpha_admission", "alpha_D",
-           "alpha_death_hosp", "mu_D", "mu_D_2", "mu_D_3", "mu_D_4", "mu_D_5",
-           "p_ICU_2", "p_H", "p_H_2", "p_G_D", "p_G_D_2", "mu_gamma_H", "mu_gamma_H_2",
-           "mu_gamma_H_3", "mu_gamma_H_4", "seed_date_alpha", "ta_alpha",
-           "seed_date_delta", "ta_delta", "seed_date_omicron", "ta_omicron",
-           "rel_p_H_alpha", "rel_p_H_delta", "rel_p_ICU_alpha",
-           "rel_p_ICU_delta", "rel_p_D_alpha", "rel_p_D_delta",
-           "rel_p_H_omicron", "rel_p_ICU_omicron", "rel_p_D_omicron",
+           "alpha_death_hosp", "mu_D", "mu_D_2", "mu_D_3", "mu_D_4",
+           "p_ICU_2", "p_H", "p_G_D", "p_G_D_2", "mu_gamma_H", "mu_gamma_H_2",
+           "seed_date_alpha", "ta_alpha",
+           "rel_p_H_alpha", "rel_p_H_delta", "rel_p_ICU_alpha", "rel_p_D_alpha",
            paste0("p_NC_", pillar2_age_bands),
            paste0("p_NC_weekend_", pillar2_age_bands))
   

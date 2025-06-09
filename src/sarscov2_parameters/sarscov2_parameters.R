@@ -53,7 +53,7 @@ source("global_util.R")
 version_check("sircovid", "0.15.1")
 version_check("spimalot", "0.8.31")
 
-date <- "2022-02-24"
+date <- "2021-03-08"
 
 ## Five epochs after starting with a single strain model (without vaccination)
 ## * mid August 2020: Alpha appears, expand strains
@@ -62,20 +62,16 @@ date <- "2022-02-24"
 ## * early March 2021: delta appears, expand strains
 ## * mid September 2021: booster programme starts, expand vaccine classes
 ## * early November 2021: omicron appears, rotate strains
-epoch_dates <- c("2020-09-17", "2020-12-07", "2021-03-08", "2021-09-14",
-                 "2021-11-01")
+epoch_dates <- NULL
 
 ## No restart date
 restart_date <- NULL
 
 ## Fixed parameter names for multiregion
 fixed_pars <- c("ta_alpha", "rel_p_H_alpha", "rel_p_ICU_alpha", "rel_p_D_alpha",
-                "ta_delta", "rel_p_H_delta", "rel_p_ICU_delta", "rel_p_D_delta",
-                "ta_omicron", "rel_p_H_omicron", "rel_p_ICU_omicron",
-                "rel_p_D_omicron", "p_G_D", "p_G_D_2", "p_H", "p_H_2", "p_H_D",
+                "p_G_D", "p_G_D_2", "p_H", "p_H_D",
                 "p_ICU", "p_ICU_2", "p_ICU_D", "p_W_D", "mu_D", "mu_D_2",
-                "mu_D_3", "mu_D_4", "mu_D_5", "mu_gamma_H", "mu_gamma_H_2",
-                "mu_gamma_H_3", "mu_gamma_H_4",
+                "mu_D_3", "mu_D_4", "mu_gamma_H", "mu_gamma_H_2",
                 "p_NC_15_24", "p_NC_25_49", "p_NC_50_64", 
                 "p_NC_65_79", "p_NC_80_plus", "p_NC_weekend_15_24",
                 "p_NC_weekend_25_49", "p_NC_weekend_50_64",

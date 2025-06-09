@@ -63,29 +63,7 @@ create_baseline <- function(region, date, restart_date,
       "2020-12-18", ## 14. school Christmas holidays
       "2020-12-25", ## 15. last day of holidays season relaxation
       "2021-01-05", ## 16. Lockdown 3 starts
-      "2021-03-08", ## 17. Step 1 of roadmap: schools reopen
-      "2021-04-01", ## 18. Semi-arbitrary - school holidays / restart date
-      "2021-04-19", ## 19. Step 2 of roadmap: outdoors hospitality (04-12)
-      ##     and schools return (04-19)
-      "2021-05-17", ## 20. Step 3 of roadmap: indoors hospitality
-      "2021-06-21", ## 21. Step 3.5 - "freedom day" delayed/Euros last group match
-      "2021-07-03", ## 22. Euros quarter final
-      "2021-07-11", ## 23. Euros 2020 final - peak in transmission
-      "2021-07-19", ## 24. Step 4
-      "2021-08-15", ## 25. Summer festivals / holidays
-      "2021-09-01", ## 26. Schools return
-      "2021-09-22", ## 27. Mid-point between school start and half term
-      ##    (help the model stabilise a long period of time)
-      "2021-10-01", ## 28. Point before sharp increase in cases/hospitalisations
-      "2021-10-22", ## 29. School half-term - Point before recent plateau in cases
-      "2021-11-01", ## 30. Schools return
-      "2021-12-08", ## 31. Announcement of move to Plan B
-      "2021-12-23", ## 32. Starting of X-mas holidays
-      "2022-01-04", ## 33. Schools return from X-mas holidays
-      "2022-01-19", ## 34. Announcement of end of Plan B
-      "2022-01-27", ## 35. End of Plan B
-      as.character(as.Date(date))) ## 36. "2022-02-24",
-  ## End of self-isolation in England
+      "2021-03-08") ## 17. Step 1 of roadmap: schools reopen, end of fits)
   
   ## Validate beta_date
   beta_date <- spimalot::spim_pars_check_beta_date(beta_date)
@@ -100,23 +78,19 @@ create_baseline <- function(region, date, restart_date,
     # direct
     "start_date", beta_names,
     # severity
-    "mu_D", "mu_D_2", "mu_D_3", "mu_D_4", "mu_D_5",
+    "mu_D", "mu_D_2", "mu_D_3", "mu_D_4",
     "p_G_D", "p_G_D_2", "p_H",
-    "p_H_2", "p_H_D", "p_ICU", "p_ICU_2",
+    "p_H_D", "p_ICU", "p_ICU_2",
     "p_ICU_D", "p_W_D",
     # progression
-    "mu_gamma_H", "mu_gamma_H_2", "mu_gamma_H_3", "mu_gamma_H_4",
+    "mu_gamma_H", "mu_gamma_H_2",
     # pillar 2 parameters
     paste0("p_NC_", pillar2_age_bands),
     paste0("p_NC_weekend_", pillar2_age_bands),
     "rho_pillar2_tests",
     # multistrain, direct
     "ta_alpha", "seed_date_alpha",
-    "ta_delta", "seed_date_delta",
-    "ta_omicron", "seed_date_omicron",
-    "rel_p_H_alpha", "rel_p_ICU_alpha", "rel_p_D_alpha",
-    "rel_p_H_delta", "rel_p_ICU_delta", "rel_p_D_delta",
-    "rel_p_H_omicron", "rel_p_ICU_omicron", "rel_p_D_omicron"
+    "rel_p_H_alpha", "rel_p_ICU_alpha", "rel_p_D_alpha"
     )
   if (assumptions == "mu_d_summer") {
     to_fit_all <- c(to_fit_all, "mu_D_6")
@@ -589,7 +563,7 @@ create_baseline <- function(region, date, restart_date,
   p <- tr(pars_info)
   message("  - Testing creating model with transformed parameters")
   for (i in seq_along(p)) {
-    m <- sircovid::lancelot$new(p[[i]]$pars, 0, 1)
+    m <- sircovid::lancelot$new(p, 0, 1)
   }
   
   ret
