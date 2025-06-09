@@ -605,3 +605,31 @@ get_convergence_diagnostic <- function(dat) {
   
   ret
 }
+
+
+get_metrics <- function(dat, period = "Emergence3") {
+  
+  variants <- dat$intrinsic_severity_raw[[1]]$variant
+  regions <- names(dat$intrinsic_severity_raw)
+  
+  get_metric1 <- function(w, v, r) {
+    i <- which(dat$intrinsic_severity_raw[[r]]$period == period)
+    j <- which(dat$intrinsic_severity_raw[[r]]$variant == v)
+    dat$intrinsic_severity_raw[[r]][[w]][i, j, ]
+  }
+  
+  lapply_nms <- 
+    function(x, fun) sapply(x, fun, simplify = FALSE, USE.NAMES = TRUE)
+  
+  out <- 
+    lapply_nms(c("IFR", "IHR", "HFR"),
+               function(w) {
+                 lapply_nms(variants,
+                            function(v) {
+                              lapply_nms(regions, 
+                                         function(r) get_metric1(w, v, r))})})
+
+  out$R0 <- spimalot:::list_transpose(dat$r0)
+
+  out
+}

@@ -28,7 +28,8 @@ orderly2::orderly_artefact(
   files = c("outputs/parameters/proposal.csv",
             "outputs/parameters/prior.csv",
             "outputs/parameters/info.csv",
-            "outputs/aggregated_data.rds"))
+            "outputs/aggregated_data.rds",
+            "outputs/metrics.rds"))
 orderly2::orderly_artefact(
   description = "regional fitting plots and projections for comparison",
   files = c("figs/age_deaths_hosp.png",
@@ -183,6 +184,7 @@ dir.create("paper_plots", FALSE, TRUE)
 dir.create("traceplots", FALSE, TRUE)
 
 saveRDS(dat$data, "outputs/aggregated_data.rds")
+saveRDS(get_metrics(dat), "outputs/metrics.rds")
 
 spimalot::spim_pars_pmcmc_save(dat$parameters, "outputs/parameters")
 

@@ -10,7 +10,7 @@ orderly2::orderly_artefact(
 orderly2::orderly_dependency(
   "sarscov2_fits_combined",
   'latest(parameter:assumptions == this:assumptions && parameter:short_run == this:short_run && parameter:deterministic == this:deterministic && parameter:multiregion == TRUE)',
-  c("regional_results/multi/fit.rds" = "regional_results/fit.rds",
+  c("inputs/metrics_multi.rds" = "outputs/metrics.rds",
     "figs/forest_plot_betas_multi.png" = "figs/forest_plot_betas.png",
     "figs/forest_plot_misc_multi.png" = "figs/forest_plot_misc.png",
     "figs/forest_plot_tv_severity_multi.png" = "figs/forest_plot_tv_severity.png",
@@ -20,13 +20,7 @@ orderly2::orderly_dependency(
 orderly2::orderly_dependency(
   "sarscov2_fits_combined",
   'latest(parameter:assumptions == this:assumptions && parameter:short_run == this:short_run && parameter:deterministic == this:deterministic && parameter:multiregion == FALSE)',
-  c("regional_results/single/east_of_england/fit.rds" = "regional_results/east_of_england/fit.rds",
-    "regional_results/single/london/fit.rds" = "regional_results/london/fit.rds",
-    "regional_results/single/midlands/fit.rds" = "regional_results/midlands/fit.rds",
-    "regional_results/single/north_east_and_yorkshire/fit.rds" = "regional_results/north_east_and_yorkshire/fit.rds",
-    "regional_results/single/north_west/fit.rds" = "regional_results/north_west/fit.rds",
-    "regional_results/single/south_east/fit.rds" = "regional_results/south_east/fit.rds",
-    "regional_results/single/south_west/fit.rds" = "regional_results/south_west/fit.rds",
+  c("inputs/metrics_single.rds" = "outputs/metrics.rds",
     "figs/forest_plot_betas_single.png" = "figs/forest_plot_betas.png",
     "figs/forest_plot_misc_single.png" = "figs/forest_plot_misc.png",
     "figs/forest_plot_tv_severity_single.png" = "figs/forest_plot_tv_severity.png",
@@ -66,13 +60,13 @@ version_check("spimalot", "0.8.31")
 
 date <- "2022-02-24"
 
-dat_multi <- spim_combined_load_multiregion("regional_results/multi",
-                                            get_severity = TRUE)
-dat_single <- spimalot::spim_combined_load("regional_results/single",
-                                           regions = "england",
-                                           get_onward = FALSE,
-                                           get_severity = TRUE)
+dat_multi <- readRDS("inputs/metrics_multi.rds")
+dat_single <- readRDS("inputs/metrics_single.rds")
 
 png("figs/compare_intrinsic_severity.png", units = "in", width = 15, height = 15, res = 300)
-plot_compare_intrinsic_severity(dat_single, dat_multi, "Emergence3")
+plot_compare_intrinsic_severity(dat_single, dat_multi)
+dev.off()
+
+png("figs/compare_aggregate_severity.png", units = "in", width = 15, height = 15, res = 300)
+plot_compare_aggregate_severity(dat_single, dat_multi)
 dev.off()
