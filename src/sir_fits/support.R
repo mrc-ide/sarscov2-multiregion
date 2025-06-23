@@ -1,6 +1,7 @@
 
-get_data <- function(data, region) {
-  if (region == "all") {
+get_data <- function(data, region, n_regions) {
+  if (region == "multi") {
+    data <- data[data$region %in% LETTERS[seq_len(n_regions)], ]
     dust2::dust_filter_data(data, time = "day", group = "region")
   } else {
     data <- data[data$region == region, ]
@@ -12,7 +13,7 @@ get_data <- function(data, region) {
 fit_control <- function(region, deterministic, n_steps, n_burnin,
                         n_sample, n_chains, n_particles) {
   
-  multiregion <- region == "all"
+  multiregion <- region == "multi"
   
   adaptive_proposal <- deterministic
   
@@ -65,12 +66,12 @@ create_packer <- function(groups = NULL) {
   
   if (is.null(groups)) {
     
-    fixed <- list(N = 1000)
+    fixed <- list(N0 = 1000)
     packer <- monty::monty_packer(scalar = fitted_pars, fixed = fixed)
   
   } else {
     
-    fixed <- list(N = 1000)
+    fixed <- list(N0 = 1000)
     shared <- c("alpha", "gamma")
     packer <- monty::monty_packer_grouped(
       groups, scalar = fitted_pars, fixed = fixed, shared = shared)
@@ -83,7 +84,7 @@ create_packer <- function(groups = NULL) {
 create_prior <- function(region, names){
   ## We will use the monty DSL for priors, but it is not currently setup
   ## for nested models so we will have to write that version manually
-  if (region == "all") {
+  if (region == "multi") {
     domain <- array(0, c(length(names), 2))
     rownames(domain) <- names
     domain[, 2] <- ifelse(grepl("^alpha", names), 1, 1000)
@@ -144,7 +145,7 @@ run_fit <- function(filter, packer, prior, control, deterministic, region) {
                                  runner = runner)
   
   rownames(samples$observations$trajectories) <- filter$packer_state$names()
-  if (region == "all") {
+  if (region == "multi") {
     colnames(samples$observations$trajectories) <- filter$groups
   }
   ## save the packer and data for downstream use
@@ -199,7 +200,7 @@ thin_samples <- function(samples, control) {
   
   samples$density <- c(samples$density)
   
-  if (region == "all") {
+  if (region == "multi") {
     samples$observations$trajectories <- 
       array_flatten(samples$observations$trajectories, c(4, 5))
   } else {

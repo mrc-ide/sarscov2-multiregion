@@ -7,7 +7,15 @@ orderly2::orderly_dependency(
     "outputs/true_pars.rds" = "outputs/true_pars.rds"))
 
 orderly_pars <- orderly2::orderly_parameters(short_run = FALSE,
-                                             region = "all")
+                                             region = "A",
+                                             n_regions = 1)
+
+if (orderly_pars$region != "multi" && orderly_pars$n_regions != 1) {
+  stop("Must have n_regions = 1 when fitting a single region")
+}
+if (orderly_pars$region == "multi" && orderly_pars$n_regions == 1) {
+  stop("If fitting multi regions, must have n_regions > 1")
+}
 
 orderly2::orderly_artefact(description = "Fit object",
                            files = c("outputs/fit.rds",
@@ -43,7 +51,7 @@ if (orderly_pars$short_run) {
 }
 
 data <- readRDS("inputs/data.rds")
-data <- get_data(data, orderly_pars$region)
+data <- get_data(data, orderly_pars$region, orderly_pars$n_regions)
 
 control <- fit_control(orderly_pars$region, deterministic, n_steps, n_burnin,
                        n_sample, n_chains, n_particles)
@@ -52,7 +60,7 @@ sir <- odin2::odin("sir.R")
 
 filter <- create_filter(sir, data, deterministic, control)
 
-groups <- if (orderly_pars$region == "all") unique(data$region) else NULL
+groups <- if (orderly_pars$region == "multi") unique(data$region) else NULL
 
 packer <- create_packer(groups)
 

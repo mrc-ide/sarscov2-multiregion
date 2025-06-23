@@ -5,12 +5,12 @@ regions <- LETTERS[seq_len(orderly_pars$n_regions)]
 
 for (r in regions) {
   orderly2::orderly_dependency("sir_fits",
-                               quote(latest(parameter:region == environment:r && parameter:short_run == this:short_run)),
+                               quote(latest(parameter:region == environment:r && parameter:short_run == this:short_run && parameter:n_regions = 1)),
                                c("inputs/fit_single_${r}.rds" = "outputs/fit.rds",
                                  "figs/traceplots_single_${r}.png" = "outputs/traceplots.png"))
 }
 orderly2::orderly_dependency("sir_fits",
-                             quote(latest(parameter:region == "all" && parameter:short_run == this:short_run)),
+                             quote(latest(parameter:region == "all" && parameter:short_run == this:short_run && parameter:n_regions == this:n_regions)),
                              c("inputs/fit_multi.rds" = "outputs/fit.rds",
                                "figs/traceplots_multi.png" = "outputs/traceplots.png",
                                "inputs/true_history.rds" = "outputs/true_history.rds",
