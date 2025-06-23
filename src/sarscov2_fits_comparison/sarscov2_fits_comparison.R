@@ -10,23 +10,23 @@ orderly2::orderly_artefact(
 orderly2::orderly_dependency(
   "sarscov2_fits_combined",
   'latest(parameter:assumptions == this:assumptions && parameter:short_run == this:short_run && parameter:deterministic == this:deterministic && parameter:multiregion == TRUE)',
-  c("inputs/metrics_multi.rds" = "outputs/metrics.rds",
-    "figs/forest_plot_betas_multi.png" = "figs/forest_plot_betas.png",
-    "figs/forest_plot_misc_multi.png" = "figs/forest_plot_misc.png",
-    "figs/forest_plot_tv_severity_multi.png" = "figs/forest_plot_tv_severity.png",
-    "figs/forest_plot_variants_multi.png" = "figs/forest_plot_variants.png", 
-    "figs/paper_figure_1_multi.png" = "paper_plots/paper_figure_1.png",
-    "figs/paper_figure_2_multi.png" = "paper_plots/paper_figure_2.png"))
+  c("inputs/metrics_multi.rds" = "outputs/metrics.rds"))
+    #"figs/forest_plot_betas_multi.png" = "figs/forest_plot_betas.png",
+    #"figs/forest_plot_misc_multi.png" = "figs/forest_plot_misc.png",
+    #"figs/forest_plot_tv_severity_multi.png" = "figs/forest_plot_tv_severity.png",
+    #"figs/forest_plot_variants_multi.png" = "figs/forest_plot_variants.png", 
+    #"figs/paper_figure_1_multi.png" = "paper_plots/paper_figure_1.png",
+    #"figs/paper_figure_2_multi.png" = "paper_plots/paper_figure_2.png"))
 orderly2::orderly_dependency(
   "sarscov2_fits_combined",
   'latest(parameter:assumptions == this:assumptions && parameter:short_run == this:short_run && parameter:deterministic == this:deterministic && parameter:multiregion == FALSE)',
-  c("inputs/metrics_single.rds" = "outputs/metrics.rds",
-    "figs/forest_plot_betas_single.png" = "figs/forest_plot_betas.png",
-    "figs/forest_plot_misc_single.png" = "figs/forest_plot_misc.png",
-    "figs/forest_plot_tv_severity_single.png" = "figs/forest_plot_tv_severity.png",
-    "figs/forest_plot_variants_single.png" = "figs/forest_plot_variants.png", 
-    "figs/paper_figure_1_single.png" = "paper_plots/paper_figure_1.png",
-    "figs/paper_figure_2_single.png" = "paper_plots/paper_figure_2.png"))
+  c("inputs/metrics_single.rds" = "outputs/metrics.rds"))
+    #"figs/forest_plot_betas_single.png" = "figs/forest_plot_betas.png",
+    #"figs/forest_plot_misc_single.png" = "figs/forest_plot_misc.png",
+    #"figs/forest_plot_tv_severity_single.png" = "figs/forest_plot_tv_severity.png",
+    #"figs/forest_plot_variants_single.png" = "figs/forest_plot_variants.png", 
+    #"figs/paper_figure_1_single.png" = "paper_plots/paper_figure_1.png",
+    #"figs/paper_figure_2_single.png" = "paper_plots/paper_figure_2.png"))
 
 library(sircovid)
 library(spimalot)
@@ -62,6 +62,8 @@ date <- "2022-02-24"
 
 dat_multi <- readRDS("inputs/metrics_multi.rds")
 dat_single <- readRDS("inputs/metrics_single.rds")
+
+dir.create("figs", FALSE, TRUE)
 
 png("figs/compare_intrinsic_severity.png", units = "in", width = 15, height = 15, res = 300)
 plot_compare_intrinsic_severity(dat_single, dat_multi)

@@ -62,7 +62,7 @@ date <- "2021-03-08"
 ## * early March 2021: delta appears, expand strains
 ## * mid September 2021: booster programme starts, expand vaccine classes
 ## * early November 2021: omicron appears, rotate strains
-epoch_dates <- NULL
+epoch_dates <- c("2020-09-17", "2020-12-07")
 
 ## No restart date
 restart_date <- NULL

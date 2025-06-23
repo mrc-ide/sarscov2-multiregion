@@ -39,10 +39,10 @@ orderly2::orderly_artefact(
             "figs/age_pillar2.png",
             "figs/cumulative_attack_rate.png",
             "figs/data_fits_regional.png",
-            "figs/forest_plot_betas.png",
-            "figs/forest_plot_misc.png",
-            "figs/forest_plot_variants.png",
-            "figs/forest_plot_tv_severity.png",
+            # "figs/forest_plot_betas.png",
+            # "figs/forest_plot_misc.png",
+            # "figs/forest_plot_variants.png",
+            # "figs/forest_plot_tv_severity.png",
             "figs/incidence.png",
             "figs/incidence_per_1000.png",
             "figs/infections_per_strain.png",
@@ -56,8 +56,8 @@ orderly2::orderly_artefact(
             "figs/status_infection.png",
             "figs/status_vaccine.png",
             "figs/variant_Wildtype_Alpha.png",
-            "figs/variant_Alpha_Delta.png",
-            "figs/variant_Delta_Omicron.png",
+            # "figs/variant_Alpha_Delta.png",
+            # "figs/variant_Delta_Omicron.png",
             "figs/mu_D.png",
             "figs_by_age/pillar2_0_14.png",
             "figs_by_age/pillar2_15_24.png",
@@ -102,11 +102,12 @@ if (rt_severity) {
     "Plots of Rt or severity",
     c("figs/beta.png",
       "figs/Rt_eff_general.png",
-      "figs/Rt_general.png",
-      "paper_plots/paper_figure_1.png",
-      "paper_plots/paper_figure_2.png",
-      "paper_plots/suppl_age_heatmaps.png",
-      "paper_plots/suppl_regional_intrinsic.png"))
+      "figs/Rt_general.png"
+      # "paper_plots/paper_figure_1.png",
+      # "paper_plots/paper_figure_2.png",
+      # "paper_plots/suppl_age_heatmaps.png",
+      # "paper_plots/suppl_regional_intrinsic.png")
+    ))
 }
 
 if (multiregion) {
@@ -188,45 +189,45 @@ saveRDS(get_metrics(dat), "outputs/metrics.rds")
 
 spimalot::spim_pars_pmcmc_save(dat$parameters, "outputs/parameters")
 
-par_names <- unique(dat$parameters$proposal$name)
-subset_variants <- c("ta_alpha", "rel_p_H_alpha",
-                     "rel_p_ICU_alpha", "rel_p_D_alpha",
-                     "ta_delta", "rel_p_H_delta",
-                     "rel_p_ICU_delta",  "rel_p_D_delta",
-                     "ta_omicron", "rel_p_ICU_omicron",
-                     "rel_p_H_omicron", "rel_p_D_omicron")
-subset_tv_severity <- c("mu_D", "mu_D_5", "p_H",
-                        "mu_D_2", "p_H_D", "p_H_2",
-                        "mu_D_3", "p_ICU_D", "p_ICU",
-                        "mu_D_4", "p_W_D", "p_ICU_2")
-subset_misc <-   
-  setdiff(grep("^beta", par_names, value = TRUE, invert = TRUE),
-          c(subset_variants, subset_tv_severity))
-seed_dates <- c("start_date", "seed_date_alpha", "seed_date_delta",
-                "seed_date_omicron")
-subset_misc <- c(seed_dates, setdiff(subset_misc, seed_dates))
-par_labels <- forest_plot_labels(dat)
-
-write_png("figs/forest_plot_variants.png", width = 1600, height = 1600, res = 200,
-          spim_plot_forest(
-            dat, plot_type = "subset", nrow = 3,
-            subset = subset_variants,
-            par_labels = par_labels))
-
-write_png("figs/forest_plot_tv_severity.png", width = 1600, height = 1600, res = 200,
-          spim_plot_forest(dat, plot_type = "subset",
-                           subset = subset_tv_severity,
-                           par_labels = par_labels))
-
-write_png("figs/forest_plot_misc.png",
-          width = 2400, height = 1600, res = 200,
-          spim_plot_forest(dat, plot_type = "subset",
-                           subset = subset_misc,
-                           par_labels = par_labels))
-
-write_png("figs/forest_plot_betas.png", width = 2400, height = 1600, res = 200,
-          spim_plot_forest(dat, plot_type = "betas",
-                           par_labels = par_labels))
+# par_names <- unique(dat$parameters$proposal$name)
+# subset_variants <- c("ta_alpha", "rel_p_H_alpha",
+#                      "rel_p_ICU_alpha", "rel_p_D_alpha",
+#                      "ta_delta", "rel_p_H_delta",
+#                      "rel_p_ICU_delta",  "rel_p_D_delta",
+#                      "ta_omicron", "rel_p_ICU_omicron",
+#                      "rel_p_H_omicron", "rel_p_D_omicron")
+# subset_tv_severity <- c("mu_D", "mu_D_5", "p_H",
+#                         "mu_D_2", "p_H_D", "p_H_2",
+#                         "mu_D_3", "p_ICU_D", "p_ICU",
+#                         "mu_D_4", "p_W_D", "p_ICU_2")
+# subset_misc <-   
+#   setdiff(grep("^beta", par_names, value = TRUE, invert = TRUE),
+#           c(subset_variants, subset_tv_severity))
+# seed_dates <- c("start_date", "seed_date_alpha", "seed_date_delta",
+#                 "seed_date_omicron")
+# subset_misc <- c(seed_dates, setdiff(subset_misc, seed_dates))
+# par_labels <- forest_plot_labels(dat)
+# 
+# write_png("figs/forest_plot_variants.png", width = 1600, height = 1600, res = 200,
+#           spim_plot_forest(
+#             dat, plot_type = "subset", nrow = 3,
+#             subset = subset_variants,
+#             par_labels = par_labels))
+# 
+# write_png("figs/forest_plot_tv_severity.png", width = 1600, height = 1600, res = 200,
+#           spim_plot_forest(dat, plot_type = "subset",
+#                            subset = subset_tv_severity,
+#                            par_labels = par_labels))
+# 
+# write_png("figs/forest_plot_misc.png",
+#           width = 2400, height = 1600, res = 200,
+#           spim_plot_forest(dat, plot_type = "subset",
+#                            subset = subset_misc,
+#                            par_labels = par_labels))
+# 
+# write_png("figs/forest_plot_betas.png", width = 2400, height = 1600, res = 200,
+#           spim_plot_forest(dat, plot_type = "betas",
+#                            par_labels = par_labels))
 if (multiregion) {
   write_png("traceplots/traceplot_fixed.png", width = 3000, height = 1800, res = 200,
             plot_traceplots(dat, "england", FALSE))
@@ -266,8 +267,8 @@ write_png("figs/status_effective_susceptible.png",
           width = 2400, height = 1200, res = 200,
           spimalot::spim_plot_effective_susceptible(
             dat, sircovid::regions("england"),
-            strain_names = c("Wildtype", "Alpha", "Delta", "Omicron"),
-            as.Date(c("2019-12-31", "2020-09-18", "2021-03-09", "2021-11-02"))))
+            strain_names = c("Wildtype", "Alpha"),
+            as.Date(c("2019-12-31", "2020-09-18"))))
 
 write_png("figs/status_vaccine.png",
           width = 2400, height = 1200, res = 200,
@@ -284,8 +285,8 @@ write_png("figs/infections_per_strain.png",
           width = 2400, height = 1200, res = 200,
           spimalot::spim_plot_infections_per_strain(
             dat, sircovid::regions("england"),
-            strain_names = c("Wildtype", "Alpha", "Delta", "Omicron"),
-            as.Date(c("2019-12-31", "2020-09-18", "2021-03-09", "2021-11-02"))))
+            strain_names = c("Wildtype", "Alpha"),
+            as.Date(c("2019-12-31", "2020-09-18"))))
 
 write_png("figs/cumulative_attack_rate.png",
           width = 2400, height = 1200, res = 200,
@@ -330,17 +331,17 @@ write_png("figs/variant_Wildtype_Alpha.png", width = 2400, height = 1200, res = 
             date_min = as.Date("2020-09-17"),
             date_max = as.Date("2021-03-01")))
 
-write_png("figs/variant_Alpha_Delta.png", width = 2400, height = 1200, res = 200,
-          spimalot::spim_plot_variant(
-            dat, sircovid::regions("england"), "Delta",
-            date_min = as.Date("2021-03-01"),
-            date_max = as.Date("2021-08-15")))
-
-write_png("figs/variant_Delta_Omicron.png", width = 2400, height = 1200, res = 200,
-          spimalot::spim_plot_variant(
-            dat, sircovid::regions("england"), "Omicron",
-            date_min = as.Date("2021-11-03"),
-            date_max = as.Date("2022-02-01")))
+# write_png("figs/variant_Alpha_Delta.png", width = 2400, height = 1200, res = 200,
+#           spimalot::spim_plot_variant(
+#             dat, sircovid::regions("england"), "Delta",
+#             date_min = as.Date("2021-03-01"),
+#             date_max = as.Date("2021-08-15")))
+# 
+# write_png("figs/variant_Delta_Omicron.png", width = 2400, height = 1200, res = 200,
+#           spimalot::spim_plot_variant(
+#             dat, sircovid::regions("england"), "Omicron",
+#             date_min = as.Date("2021-11-03"),
+#             date_max = as.Date("2022-02-01")))
 
 write_png("figs/incidence.png", width = 2400, height = 1200, res = 200,
           spimalot::spim_plot_incidence(
@@ -438,27 +439,27 @@ write_png("figs/age_pillar2.png", width = 2400, height = 1200, res = 200,
             title = "Pillar 2 positivity (new infections) - England"))
 
 
-if (rt_severity) {
-  vam_data <- get_strain_timelines(dat$data)
-  strain_epochs <- sircovid::sircovid_date_as_date(
-    dat$parameters$base[[1]]$epoch_dates)[dat$parameters$base[[1]]$strain_epochs[-1L]]
-  
-  # Paper plots
-  write_png("paper_plots/paper_figure_1.png", units = "in", width = 16.5,
-            height = 10, res = 300,
-            paper_plot_1(dat, "england", vam_data))
-  
-  write_png("paper_plots/paper_figure_2.png", units = "in", width = 16.5, 
-            height = 10, res = 300,
-            paper_plot_2(dat, "england", strain_epochs, vam_data, age_bands_select = TRUE))
-  
-  
-  ## Supplement plots
-  write_png("paper_plots/suppl_age_heatmaps.png", units = "in", width = 18,
-            height = 15, res = 300,
-            suppl_age_heatmaps(dat, "england", vam_data))
-  
-  write_png("paper_plots/suppl_regional_intrinsic.png", units = "in", width = 11,
-            height = 11, res = 300,
-            suppl_regional_intrinsic(dat, "england", "Emergence3", strain_epochs, vam_data))
-}
+# if (rt_severity) {
+#   vam_data <- get_strain_timelines(dat$data)
+#   strain_epochs <- sircovid::sircovid_date_as_date(
+#     dat$parameters$base[[1]]$epoch_dates)[dat$parameters$base[[1]]$strain_epochs[-1L]]
+#   
+#   # Paper plots
+#   write_png("paper_plots/paper_figure_1.png", units = "in", width = 16.5,
+#             height = 10, res = 300,
+#             paper_plot_1(dat, "england", vam_data))
+#   
+#   write_png("paper_plots/paper_figure_2.png", units = "in", width = 16.5, 
+#             height = 10, res = 300,
+#             paper_plot_2(dat, "england", strain_epochs, vam_data, age_bands_select = TRUE))
+#   
+#   
+#   ## Supplement plots
+#   write_png("paper_plots/suppl_age_heatmaps.png", units = "in", width = 18,
+#             height = 15, res = 300,
+#             suppl_age_heatmaps(dat, "england", vam_data))
+#   
+#   write_png("paper_plots/suppl_regional_intrinsic.png", units = "in", width = 11,
+#             height = 11, res = 300,
+#             suppl_regional_intrinsic(dat, "england", "Emergence3", strain_epochs, vam_data))
+# }

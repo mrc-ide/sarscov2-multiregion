@@ -1,7 +1,7 @@
 orderly2::orderly_parameters(region = "london",
                              multiregion = FALSE,
-                             deterministic = FALSE,
-                             short_run = FALSE,
+                             deterministic = TRUE,
+                             short_run = TRUE,
                              assumptions = "central",
                              rt_severity = TRUE,
                              severity = TRUE)
@@ -40,7 +40,7 @@ source("global_util.R")
 version_check("sircovid", "0.15.1")
 version_check("spimalot", "0.8.31")
 
-date <- "2022-02-24"
+date <- "2021-03-08"
 
 trim_deaths <- 0
 trim_pillar2 <- 0

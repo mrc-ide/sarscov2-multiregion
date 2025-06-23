@@ -495,9 +495,7 @@ create_baseline <- function(region, date, restart_date,
   ## The epochs where each strain is introduced
   strain_epochs <- c(
     "Wildtype" = 0,
-    "Alpha" = 1,
-    "Delta" = 3,
-    "Omicron" = 5
+    "Alpha" = 1
   )
   
   ## TODO: We save epoch date as a sircovid date, but restart date as
@@ -563,7 +561,7 @@ create_baseline <- function(region, date, restart_date,
   p <- tr(pars_info)
   message("  - Testing creating model with transformed parameters")
   for (i in seq_along(p)) {
-    m <- sircovid::lancelot$new(p, 0, 1)
+    m <- sircovid::lancelot$new(p[[i]]$pars, 0, 1)
   }
   
   ret

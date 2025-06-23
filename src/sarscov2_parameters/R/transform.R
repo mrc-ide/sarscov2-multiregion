@@ -502,6 +502,16 @@ make_transform <- function(baseline) {
       
     }
     
-    stage_parameters("Wildtype_Alpha", 2)
+    p1 <- stage_parameters("Wildtype", 0)
+    p2 <- stage_parameters("Wildtype_Alpha", 0)
+    p3 <- stage_parameters("Wildtype_Alpha", 2)
+    
+    epochs <- list(
+      mcstate::multistage_epoch(
+        epoch_dates[1], p2, sircovid::inflate_state_strains),
+      mcstate::multistage_epoch(
+        epoch_dates[2], p3, sircovid::inflate_state_vacc_classes)
+    )
+    mcstate::multistage_parameters(p1, epochs = epochs)
   }
 }

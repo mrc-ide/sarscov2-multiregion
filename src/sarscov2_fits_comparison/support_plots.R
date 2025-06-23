@@ -1,6 +1,6 @@
 plot_compare_intrinsic_severity <- function(dat_single, dat_multi) {
   
-  variant_names <- c("Wildtype", "Alpha", "Delta", "Omicron")
+  variant_names <- c("Wildtype", "Alpha")
   source_names <- c("IHR", "HFR", "IFR", "R0")
   region_names <- sircovid::regions("england")
   fit_names <- c("Single regions fit", "Multiregion fit")
@@ -46,9 +46,7 @@ plot_compare_intrinsic_severity <- function(dat_single, dat_multi) {
   box_bounds <- df %>% group_by(variant, source, fit) %>% summarise(ymin = min(lb), ymax = max(ub)) %>%
     mutate(xmin = case_when(
       variant == "Wildtype" ~ 0.5,
-      variant == "Alpha" ~ 1.5,
-      variant == "Delta" ~ 2.5,
-      variant == "Omicron" ~ 3.5)) %>%
+      variant == "Alpha" ~ 1.5)) %>%
     mutate(xmax = xmin + 1)
                        
   scale_y_IHR <- scale_y_continuous(labels = scales::percent_format(accuracy = 0.1))
@@ -74,7 +72,7 @@ plot_compare_intrinsic_severity <- function(dat_single, dat_multi) {
 plot_compare_aggregate_severity <- function(dat_single, dat_multi) {
   dat_single_maxvar <- aggregate_maxvar(dat_single)
   
-  variant_names <- c("Wildtype", "Alpha", "Delta", "Omicron")
+  variant_names <- c("Wildtype", "Alpha")
   source_names <- c("IHR", "HFR", "IFR", "R0")
   fit_names <- c("Multiregion fit", "Single regions fit paired", 
                  "Single regions fit ranked")
