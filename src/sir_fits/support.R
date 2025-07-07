@@ -47,7 +47,8 @@ fit_control <- function(region, deterministic, n_steps, n_burnin,
 create_filter <- function(sys, data, deterministic, control) {
   
   if (deterministic) {
-    dust2::dust_unfilter_create(sys, 0, data, dt = 0.25)
+    dust2::dust_unfilter_create(sys, 0, data, dt = 0.25,
+                                n_threads = control$filter$n_threads)
     
   } else {
     dust2::dust_filter_create(sys, 0, data, dt = 0.25,
