@@ -6,13 +6,11 @@ orderly2::orderly_run("sir_data",
                       parameters = list(n_regions = n_regions))
 
 
-### ---------------------------------------------------------------------------
+##----------------------------Run on cluster------------------------------------
 hipercow::hipercow_init()
 hipercow::hipercow_configure(driver = "dide-windows")
 hipercow::hipercow_provision()
 
-
-##----------------------------Long run------------------------------------------------
 ##--------------------
 ## Long runs multiregion
 ##--------------------
@@ -46,3 +44,29 @@ comparison <-
   obj$enqueue(orderly2::orderly_run('sir_fits_comparison',
                                     parameters = list(short_run = FALSE,
                                                       n_regions = n_regions)))
+
+
+
+
+##----------------------------Run locally---------------------------------------
+##--------------------
+## Long runs multiregion
+##--------------------
+orderly2::orderly_run('sir_fits',
+                      parameters = list(short_run = FALSE,
+                                        region = "all"))
+
+##--------------------
+## Long runs single region
+##--------------------
+single_region_fits <- 
+  lapply(regions,
+         function(r) orderly2::orderly_run('sir_fits',
+                                           parameters = list(short_run = FALSE,
+                                                             region = r)))
+
+comparison <-
+  orderly2::orderly_run('sir_fits_comparison',
+                        parameters = list(short_run = FALSE,
+                                          n_regions = n_regions))
+
