@@ -65,12 +65,12 @@ create_packer <- function(groups = NULL) {
   
   if (is.null(groups)) {
     
-    fixed <- list(N = 1000)
+    fixed <- list(N0 = 1000)
     packer <- monty::monty_packer(scalar = fitted_pars, fixed = fixed)
   
   } else {
     
-    fixed <- list(N = 1000)
+    fixed <- list(N0 = 1000)
     shared <- c("alpha", "gamma")
     packer <- monty::monty_packer_grouped(
       groups, scalar = fitted_pars, fixed = fixed, shared = shared)
@@ -133,7 +133,7 @@ run_fit <- function(filter, packer, prior, control, deterministic, region) {
   n_chains <- control$pmcmc$n_chains
   
   if (deterministic) {
-    sampler <- monty::monty_sampler_adaptive(vcv)
+    sampler <- monty::monty_sampler_adaptive(vcv, initial_vcv_weight = 10)
   } else {
     sampler <- monty::monty_sampler_random_walk(vcv)
   }
