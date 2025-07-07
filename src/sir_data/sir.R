@@ -1,4 +1,4 @@
-p_SI <- 1 - exp(-beta * I / N * dt)
+p_SI <- 1 - exp(-beta * I / N0 * dt)
 p_IR <- 1 - exp(-gamma * dt)
 n_IR <- Binomial(I, p_IR)
 n_SI <- Binomial(S, p_SI)
@@ -9,8 +9,8 @@ update(R) <- R + n_IR
 update(cases_cumul) <- cases_cumul + n_SI
 update(cases_inc) <- cases_inc + n_SI
 
-I0 <- min(Poisson(lambda), N)
-initial(S) <- N - I0
+I0 <- min(Poisson(lambda), N0)
+initial(S) <- N0 - I0
 initial(R) <- 0
 initial(I) <- I0
 initial(cases_cumul) <- 0
@@ -19,7 +19,7 @@ initial(cases_inc, zero_every = 1) <- 0
 beta <- parameter()
 gamma <- parameter()
 alpha <- parameter()
-N <- parameter()
+N0 <- parameter()
 lambda <- parameter()
 
 exp_noise <- parameter(1e+06)

@@ -26,13 +26,13 @@ pars_region_1 <- function() {
        gamma = 0.1,
        alpha = 0.2,
        lambda = rpois(1, 10),
-       N = 1000)
+       N0 = 1000)
 }
 
 pars <- lapply(regions, function(x) pars_region_1())
 
 sys <- dust2::dust_system_create(sir, pars, n_groups = orderly_pars$n_regions,
-                                 dt = 0.25)
+                                 dt = 0.25, seed = 1)
 dust2::dust_system_set_state_initial(sys)
 time <- 0:100
 y <- dust2::dust_system_simulate(sys, time)
@@ -40,6 +40,7 @@ y <- dust2::dust_system_simulate(sys, time)
 rownames(y) <- unlist(names(dust2::dust_unpack_index(sys)))
 colnames(y) <- regions
 
+set.seed(1)
 
 data <- simulate_data(y, pars)
 
