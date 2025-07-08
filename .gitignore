@@ -6,6 +6,7 @@ draft
 archive
 # ---^^^--- added by orderly ---^^^----------------
 .Rproj.user
+.Rproj
 .Rhistory
 contexts
 hipercow
