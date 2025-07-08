@@ -1,5 +1,5 @@
 
-n_regions <- 20
+n_regions <- 5
 regions <- LETTERS[seq_len(n_regions)]
 
 orderly2::orderly_run("sir_data",
@@ -18,21 +18,12 @@ multiregion_fits <- hipercow::task_create_expr(
   orderly2::orderly_run('sir_fits',
                         parameters = list(short_run = FALSE,
                                           region = "multi",
-                                          n_regions = 5)),
+                                          n_regions = n_regions)),
   resources = hipercow::hipercow_resources(queue = 'AllNodes',
                                            cores = 20)
 )
 multiregion_fits_result <- hipercow::task_result(multiregion_fits)
 
-multiregion_fits <- hipercow::task_create_expr(
-  orderly2::orderly_run('sir_fits',
-                        parameters = list(short_run = FALSE,
-                                          region = "multi",
-                                          n_regions = 20)),
-  resources = hipercow::hipercow_resources(queue = 'AllNodes',
-                                           cores = 20)
-)
-multiregion_fits_result <- hipercow::task_result(multiregion_fits)
 
 ##--------------------
 ## Long runs single region
@@ -66,7 +57,8 @@ comparison <-
 ##--------------------
 orderly2::orderly_run('sir_fits',
                       parameters = list(short_run = FALSE,
-                                        region = "all"))
+                                        region = "multi",
+                                        n_regions = n_regions))
 
 ##--------------------
 ## Long runs single region
@@ -75,7 +67,8 @@ single_region_fits <-
   lapply(regions,
          function(r) orderly2::orderly_run('sir_fits',
                                            parameters = list(short_run = FALSE,
-                                                             region = r)))
+                                                             region = r,
+                                                             n_regions = 1)))
 
 comparison <-
   orderly2::orderly_run('sir_fits_comparison',
