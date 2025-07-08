@@ -1,4 +1,4 @@
-## run script: multiregion and region specific deperministic models.
+## run script: multiregion and region specific deterministic models.
 # If not already run you will need to run these
 
 orderly2::orderly_run("sarscov2_data")
@@ -22,12 +22,13 @@ orderly2::orderly_run(
 
 ### ---------------------------------------------------------------------------
 ## Basic cluster setup
-hipercow::hipercow_init(driver = "windows")
-hipercow::hipercow_provision(method = "pkgdepends")
+hipercow::hipercow_init()
+hipercow::hipercow_configure(driver = "dide-windows")
+hipercow::hipercow_provision()
 
 regions <- sircovid::regions("england")
 
-short_run <- TRUE
+short_run <- FALSE
 
 ##--------------------
 ## multiregion deterministic

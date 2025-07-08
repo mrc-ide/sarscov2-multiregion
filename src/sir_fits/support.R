@@ -48,7 +48,8 @@ fit_control <- function(region, deterministic, n_steps, n_burnin,
 create_filter <- function(sys, data, deterministic, control) {
   
   if (deterministic) {
-    dust2::dust_unfilter_create(sys, 0, data, dt = 0.25)
+    dust2::dust_unfilter_create(sys, 0, data, dt = 0.25,
+                                n_threads = control$filter$n_threads)
     
   } else {
     dust2::dust_filter_create(sys, 0, data, dt = 0.25,
@@ -134,7 +135,7 @@ run_fit <- function(filter, packer, prior, control, deterministic, region) {
   n_chains <- control$pmcmc$n_chains
   
   if (deterministic) {
-    sampler <- monty::monty_sampler_adaptive(vcv)
+    sampler <- monty::monty_sampler_adaptive(vcv, initial_vcv_weight = 10)
   } else {
     sampler <- monty::monty_sampler_random_walk(vcv)
   }
