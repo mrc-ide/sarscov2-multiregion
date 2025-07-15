@@ -7,6 +7,7 @@ orderly2::orderly_dependency(
     "outputs/true_pars.rds" = "outputs/true_pars.rds"))
 
 orderly_pars <- orderly2::orderly_parameters(short_run = FALSE,
+                                             deterministic = FALSE,
                                              region = "A",
                                              n_regions = 1)
 
@@ -34,8 +35,6 @@ library(odin2)
 library(ggplot2)
 library(bayesplot)
 
-deterministic <- TRUE
-
 if (orderly_pars$short_run) {
   n_burnin <- 50
   n_steps <- 150
@@ -47,18 +46,18 @@ if (orderly_pars$short_run) {
   n_steps <- 15000
   n_sample <- 1000
   n_chains <- 4
-  n_particles <- 200
+  n_particles <- 400
 }
 
 data <- readRDS("inputs/data.rds")
 data <- get_data(data, orderly_pars$region, orderly_pars$n_regions)
 
-control <- fit_control(orderly_pars$region, deterministic, n_steps, n_burnin,
-                       n_sample, n_chains, n_particles)
+control <- fit_control(orderly_pars$region, orderly_pars$deterministic,
+                       n_steps, n_burnin, n_sample, n_chains, n_particles)
 
 sir <- odin2::odin("sir.R")
 
-filter <- create_filter(sir, data, deterministic, control)
+filter <- create_filter(sir, data, orderly_pars$deterministic, control)
 
 groups <- if (orderly_pars$region == "multi") unique(data$region) else NULL
 
@@ -66,7 +65,7 @@ packer <- create_packer(groups)
 
 prior <- create_prior(orderly_pars$region, packer$names())
 
-fit <- run_fit(filter, packer, prior, control, deterministic,
+fit <- run_fit(filter, packer, prior, control, orderly_pars$deterministic,
                orderly_pars$region)
 
 dir.create("outputs", FALSE, TRUE)

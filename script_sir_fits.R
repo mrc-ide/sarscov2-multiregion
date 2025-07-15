@@ -1,6 +1,7 @@
 
 n_regions <- 5
 regions <- LETTERS[seq_len(n_regions)]
+deterministic <- FALSE
 
 orderly2::orderly_run("sir_data",
                       parameters = list(n_regions = n_regions))
@@ -17,10 +18,11 @@ hipercow::hipercow_provision()
 multiregion_fits <- hipercow::task_create_expr(
   orderly2::orderly_run('sir_fits',
                         parameters = list(short_run = FALSE,
+                                          deterministic = deterministic,
                                           region = "multi",
                                           n_regions = n_regions)),
   resources = hipercow::hipercow_resources(queue = 'AllNodes',
-                                           cores = 20)
+                                           cores = 32)
 )
 multiregion_fits_result <- hipercow::task_result(multiregion_fits)
 
@@ -31,11 +33,12 @@ multiregion_fits_result <- hipercow::task_result(multiregion_fits)
 single_region_fits <- hipercow::task_create_bulk_expr(
   orderly2::orderly_run('sir_fits',
                         parameters = list(short_run = FALSE,
+                                          deterministic = deterministic,
                                           region = region,
                                           n_regions = 1)),
   data.frame(region = regions),
   resources = hipercow::hipercow_resources(queue = 'AllNodes',
-                                           cores = 4)
+                                           cores = if (deterministic) 4 else 32)
 )
 single_region_fits_result <- 
   hipercow::hipercow_bundle_result(single_region_fits$name)
@@ -43,10 +46,11 @@ single_region_fits_result <-
 
 
 
-comparison <-
-  obj$enqueue(orderly2::orderly_run('sir_fits_comparison',
-                                    parameters = list(short_run = FALSE,
-                                                      n_regions = n_regions)))
+comparison <- obj$enqueue(
+  orderly2::orderly_run('sir_fits_comparison',
+                        parameters = list(short_run = FALSE,
+                                          deterministic = deterministic,
+                                          n_regions = n_regions)))
 
 
 
@@ -57,6 +61,7 @@ comparison <-
 ##--------------------
 orderly2::orderly_run('sir_fits',
                       parameters = list(short_run = FALSE,
+                                        deterministic = deterministic,
                                         region = "multi",
                                         n_regions = n_regions))
 
@@ -66,11 +71,14 @@ orderly2::orderly_run('sir_fits',
 single_region_fits <- 
   lapply(regions,
          function(r) orderly2::orderly_run('sir_fits',
-                                           parameters = list(short_run = FALSE,
-                                                             region = r,
-                                                             n_regions = 1)))
+                                           parameters =
+                                             list(short_run = FALSE,
+                                                  deterministic = deterministic,
+                                                  region = r,
+                                                  n_regions = 1)))
 
 comparison <-
   orderly2::orderly_run('sir_fits_comparison',
                         parameters = list(short_run = FALSE,
+                                          deterministic = deterministic,
                                           n_regions = n_regions))

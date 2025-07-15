@@ -19,14 +19,16 @@ fit_control <- function(region, deterministic, n_steps, n_burnin,
   
   thinning_factor <- floor((n_steps - n_burnin) / (n_sample / n_chains))
   
-  parallel <- control_parallel(n_chains, multiregion)
+  parallel <- control_parallel(n_chains, deterministic, multiregion)
+  
+  n_threads <- parallel$n_threads_total / parallel$n_workers
   
   rerun_every <- if (deterministic) Inf else 100
   
   n_particles <- if (deterministic) 1 else n_particles
   
   filter <- list(n_particles = n_particles,
-                 n_threads = parallel$n_threads)
+                 n_threads = n_threads)
   
   pmcmc <- list(n_steps = n_steps,
                 n_chains = n_chains,
@@ -156,14 +158,17 @@ run_fit <- function(filter, packer, prior, control, deterministic, region) {
 }
 
 
-control_parallel <- function(n_chains, multiregion, verbose = TRUE) {
+control_parallel <- function(n_chains, deterministic, 
+                             multiregion, verbose = TRUE) {
   n_threads <- control_cores()
-  max_workers <- 4
+  max_workers <- if (deterministic) 1 else 4
   
-  if (!multiregion) {
+  if (deterministic && !multiregion) {
+    ## Increase the number of workers because each will be running
+    ## separately
     n_workers <- min(n_chains, n_threads)
     n_threads <- n_workers
-  } else {
+  } else if (deterministic && multiregion) {
     n_workers <- min(n_chains, n_threads, max_workers)
     n_threads_given <- n_threads
     n_threads <- ceiling(n_threads / n_workers) * n_workers
@@ -171,7 +176,11 @@ control_parallel <- function(n_chains, multiregion, verbose = TRUE) {
       message(sprintf("Increasing total threads from %d to %d",
                       n_threads_given, n_threads))
     }
+  } else {
+    pos <- seq_len(max_workers)
+    n_workers <- max(pos[n_threads %% pos == 0 & pos <= n_chains])
   }
+  
   
   if (verbose) {
     message(sprintf("Running on %d workers with %d threads",
